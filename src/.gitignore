@@ -1,0 +1,3 @@
+*.o
+input-proxy-sender
+input-proxy-receiver
