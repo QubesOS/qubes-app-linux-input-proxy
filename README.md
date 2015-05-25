@@ -19,8 +19,8 @@ The only option is device file path, for example `/dev/input/event2`. Take a
 look at `/dev/input/by-id` directory for stable named symlinks. You should use
 `event` devices, not `mouse` or anything else.
 
-You need to have access to the device file, which most likely need that
-`input-proxy-sender` should be started as `root`, or you need some `udev` rule
+You need to have access to the device file, which most likely means that you
+need to start `input-proxy-sender` as `root`, or you need some `udev` rule
 to alter file permissions.
 
 input-proxy-receiver
@@ -64,18 +64,18 @@ Provide appropriate policy `/etc/qubes-rpc/policy/qubes.InputMouse`:
 
 Then create systemd service in your USB VM, which will call
 `input-proxy-sender`, for example
-`/etc/systemd/system/input-proxy-sender.service:
+`/etc/systemd/system/input-sender-mouse@.service`:
 
     [Unit]
     Name=Input proxy sender
     After=qubes-qrexec-agent.service
 
     [Service]
-    ExecStart=/usr/bin/qrexec-client-vm dom0 qubes.InputMouse /usr/bin/input-proxy-sender /dev/input/event2
+    ExecStart=/usr/bin/qrexec-client-vm dom0 qubes.InputMouse /usr/bin/input-proxy-sender /dev/input/%i
 
 
 And create udev rule in your USB VM, which will automatically start the
 service, for example `/etc/udev/rules.d/input-proxy.rules`:
 
-    KERNEL=="input/event2", ACTION=="add", RUN+="/bin/systemctl --no-block start input-proxy-sender.service"
-    KERNEL=="input/event2", ACTION=="remove", RUN+="/bin/systemctl --no-block stop input-proxy-sender.service"
+    KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_MOUSE}=="1", RUN+="/bin/systemctl --no-block start input-sender-mouse@%k.service"
+    KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop input-proxy-sender@%k.service"
