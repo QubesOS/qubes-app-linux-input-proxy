@@ -44,6 +44,33 @@ This tool uses `/dev/uinput` to emulate the device, which means you need:
 1. Load `uinput` kernel module.
 2. Set appropriate permissions, so you'll have access to it (or start the tool as root).
 
+
+Security notice
+---------------
+
+Keep in mind that VM to which your input devices are connected, has
+effectively control over your system. Because of this, benefits of using USB VM
+then are much smaller than using fully untrusted USB VM. Besides having control
+over your system, such VM can also sniff all the input your are entering there
+- for example passwords in case of keyboard.
+
+There is no simple way to protect against sniffing. But you can make it harder
+to exploit control over input devices.
+
+If you have only mouse connected to USB VM, but keyboard is still in dom0
+(using PS/2 connector for example), you can simply need to lock the screen when
+you are away from keyboard. Every time, even if no other person could access
+your computer. This is because you are guarding the system not only against
+other person, but also against possible actions from USB VM.
+
+If your keyboard is also connected to USB VM, things are much harder. Locking
+the screen (with traditional password) does not solve the problem, because USB
+VM can simply sniff this password and later easily unlock the screen. One
+possibility is to setup screen locker to require some additional step to
+unlock. Generally some physical presence factor in addition to password. One
+way to achieve this is to use [YubiKey](https://www.qubes-os.org/doc/YubiKey/),
+or some other hardware token. Or even manually entered one time password.
+
 Example usage
 -------------
 
