@@ -118,4 +118,4 @@ And create udev rule in your USB VM, which will automatically start the
 service, for example `/etc/udev/rules.d/input-proxy.rules`:
 
     KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_MOUSE}=="1", RUN+="/bin/systemctl --no-block start input-sender-mouse@%k.service"
-    KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop input-proxy-sender@%k.service"
+    KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop input-sender-mouse@%k.service"
