@@ -71,10 +71,23 @@ unlock. Generally some physical presence factor in addition to password. One
 way to achieve this is to use [YubiKey](https://www.qubes-os.org/doc/YubiKey/),
 or some other hardware token. Or even manually entered one time password.
 
-Example usage
--------------
+Packages
+--------
 
-The simplest way to use it is to just call `qvm-run`:
+There are two packages available:
+1. qubes-input-proxy-sender - to be installed in VM with actual input device
+2. qubes-input-proxy - to be installed in dom0
+
+Those packages already contains useful service files. The only thing you need
+to do, is to setup appropriate policy in
+`/etc/qubes-rpc/policy/qubes.InputMouse` (and maybe also
+`qubes.InputKeyboard`). Default policy dany any access.
+
+Manual usage
+------------
+
+You can also manually use this proxy. The simplest way to do that, is to just
+call `qvm-run`:
 
     qvm-run -u root --pass-io --localcmd="input-proxy-receiver --mouse" usbvm "input-proxy-sender /dev/input/event2"
 
