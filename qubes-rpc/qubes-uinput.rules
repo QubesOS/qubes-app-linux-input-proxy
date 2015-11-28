@@ -1,0 +1,1 @@
+KERNEL=="uinput", GROUP="qubes", MODE="0660"
