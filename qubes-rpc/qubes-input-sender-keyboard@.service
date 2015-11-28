@@ -1,6 +1,6 @@
 [Unit]
-Name=Qubes input proxy sender (keyboard)
+Description=Qubes input proxy sender (keyboard)
 After=qubes-qrexec-agent.service
 
 [Service]
-ExecStart=/usr/bin/qrexec-client-vm dom0 qubes.InputKeyboard /usr/bin/qubes-input-proxy-sender /dev/input/%i
+ExecStart=/usr/bin/qrexec-client-vm dom0 qubes.InputKeyboard /usr/bin/input-proxy-sender /dev/input/%i

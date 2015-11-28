@@ -1,1 +1,1 @@
-qubes-input-proxy-receiver --mouse
+/usr/bin/input-proxy-receiver --mouse
