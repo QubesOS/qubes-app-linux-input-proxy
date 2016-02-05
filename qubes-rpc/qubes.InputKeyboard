@@ -1,1 +1,1 @@
-/usr/bin/input-proxy-receiver --keyboard
+/usr/bin/input-proxy-receiver --keyboard --mouse

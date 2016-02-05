@@ -2,6 +2,7 @@ install:
 	install -d $(DESTDIR)/usr/lib/systemd/system
 	install -m 0644 \
 		qubes-input-sender-keyboard@.service \
+		qubes-input-sender-keyboard-mouse@.service \
 		qubes-input-sender-mouse@.service \
 		$(DESTDIR)/usr/lib/systemd/system
 	install -d $(DESTDIR)/lib/udev/rules.d

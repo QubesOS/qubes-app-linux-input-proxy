@@ -59,6 +59,7 @@ make install DESTDIR=%{buildroot}
 /lib/udev/rules.d/90-qubes-input-proxy.rules
 %{_unitdir}/qubes-input-sender-mouse@.service
 %{_unitdir}/qubes-input-sender-keyboard@.service
+%{_unitdir}/qubes-input-sender-keyboard-mouse@.service
 
 %changelog
 
