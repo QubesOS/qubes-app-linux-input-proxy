@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <poll.h>
 #include <fcntl.h>
@@ -278,9 +279,12 @@ void usage() {
     fprintf(stderr, "    --keyboard, -k - allow remote device act as keyboard\n");
     fprintf(stderr, "      --tablet, -t - allow remote device act as tablet\n");
     fprintf(stderr, "   --name=NAME, -n - set device name\n");
-    fprintf(stderr, "   --vendor=ID,    - set device vendor ID\n");
-    fprintf(stderr, "  --product=ID,    - set device product ID\n");
+    fprintf(stderr, "   --vendor=ID,    - set device vendor ID (hex)\n");
+    fprintf(stderr, "  --product=ID,    - set device product ID (hex)\n");
 }
+
+#define OPT_VENDOR  128
+#define OPT_PRODUCT 129
 
 int parse_options(struct options *opt, int argc, char **argv) {
     struct option opts[] = {
@@ -288,6 +292,8 @@ int parse_options(struct options *opt, int argc, char **argv) {
         { "keyboard",  0, 0, 'k' },
         { "tablet",    0, 0, 't' },
         { "name",      1, 0, 'n' },
+        { "vendor",    1, 0, OPT_VENDOR },
+        { "product",   1, 0, OPT_PRODUCT },
         { 0 }
     };
     int o;
@@ -298,7 +304,7 @@ int parse_options(struct options *opt, int argc, char **argv) {
     opt->product = 0xffff;
     LONG_SET_BIT(opt->caps.evbit, EV_SYN);
 
-    while ((o = getopt_long(argc, argv, "mktn:", opts, NULL)) != -1) {
+    while ((o = getopt_long(argc, argv, "mktn:v:p:", opts, NULL)) != -1) {
         switch (o) {
             case 'm':
                 LONG_SET_BIT(opt->caps.evbit, EV_REL);
@@ -322,6 +328,12 @@ int parse_options(struct options *opt, int argc, char **argv) {
                 break;
             case 'n':
                 opt->name = optarg;
+                break;
+            case OPT_VENDOR:
+                opt->vendor = strtoul(optarg, NULL, 16);
+                break;
+            case OPT_PRODUCT:
+                opt->product = strtoul(optarg, NULL, 16);
                 break;
             default:
                 usage();
