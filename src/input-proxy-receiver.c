@@ -56,6 +56,7 @@ void long_set_bit(unsigned long *bitfield, int bit, size_t bitfield_size) {
 int receive_and_validate_caps(struct options *opt) {
     struct input_proxy_device_caps untrusted_caps;
     struct input_proxy_hello untrusted_hello;
+    size_t caps_size;
     int rc;
 
     rc = read_all(0, &untrusted_hello, sizeof(untrusted_hello));
@@ -72,18 +73,37 @@ int receive_and_validate_caps(struct options *opt) {
         return -1;
     }
 
-    /* TODO: handle smaller caps - just zero other fields */
-    if (untrusted_hello.caps_size != sizeof(untrusted_caps)) {
-        fprintf(stderr, "Incompatible device caps structure: %u != %lu\n",
-                untrusted_hello.caps_size, sizeof(untrusted_caps));
-        return -1;
-    }
-    rc = read_all(0, &untrusted_caps, sizeof(untrusted_caps));
+    caps_size = untrusted_hello.caps_size;
+    if (caps_size > sizeof(untrusted_caps))
+        caps_size = sizeof(untrusted_caps);
+    memset(&untrusted_caps, 0, sizeof(untrusted_caps));
+
+    rc = read_all(0, &untrusted_caps, caps_size);
     if (rc == 0)
         return 0;
     if (rc == -1) {
         perror("read caps");
         return -1;
+    }
+    if (untrusted_hello.caps_size > sizeof(untrusted_caps)) {
+        /* discard the rest (if any); this will work, because we already
+         * checked protocol version - in case of not compatible protocol
+         * change, the version would be different */
+        size_t to_discard = untrusted_hello.caps_size - sizeof(untrusted_caps);
+        char discard_buffer[128];
+        while (to_discard) {
+            if (to_discard < sizeof(discard_buffer))
+                rc = read_all(0, discard_buffer, to_discard);
+            else
+                rc = read_all(0, discard_buffer, sizeof(discard_buffer));
+            if (rc == 0)
+                return 0;
+            if (rc == -1) {
+                perror("discard caps");
+                return -1;
+            }
+            to_discard -= rc;
+        }
     }
 
     LONG_AND(opt->caps.propbit, untrusted_caps.propbit);
