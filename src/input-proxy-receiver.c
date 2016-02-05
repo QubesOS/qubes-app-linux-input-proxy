@@ -54,7 +54,7 @@ void long_set_bit(unsigned long *bitfield, int bit, size_t bitfield_size) {
  * returns: -1 on error, 0 on EOF, 1 on success
  */
 int receive_and_validate_caps(struct options *opt) {
-    struct input_proxy_device_caps untrusted_caps;
+    struct input_proxy_device_caps_msg untrusted_caps_msg;
     struct input_proxy_hello untrusted_hello;
     size_t caps_size;
     int rc;
@@ -74,22 +74,22 @@ int receive_and_validate_caps(struct options *opt) {
     }
 
     caps_size = untrusted_hello.caps_size;
-    if (caps_size > sizeof(untrusted_caps))
-        caps_size = sizeof(untrusted_caps);
-    memset(&untrusted_caps, 0, sizeof(untrusted_caps));
+    if (caps_size > sizeof(untrusted_caps_msg))
+        caps_size = sizeof(untrusted_caps_msg);
+    memset(&untrusted_caps_msg, 0, sizeof(untrusted_caps_msg));
 
-    rc = read_all(0, &untrusted_caps, caps_size);
+    rc = read_all(0, &untrusted_caps_msg, caps_size);
     if (rc == 0)
         return 0;
     if (rc == -1) {
         perror("read caps");
         return -1;
     }
-    if (untrusted_hello.caps_size > sizeof(untrusted_caps)) {
+    if (untrusted_hello.caps_size > sizeof(untrusted_caps_msg)) {
         /* discard the rest (if any); this will work, because we already
          * checked protocol version - in case of not compatible protocol
          * change, the version would be different */
-        size_t to_discard = untrusted_hello.caps_size - sizeof(untrusted_caps);
+        size_t to_discard = untrusted_hello.caps_size - sizeof(untrusted_caps_msg);
         char discard_buffer[128];
         while (to_discard) {
             if (to_discard < sizeof(discard_buffer))
@@ -106,11 +106,11 @@ int receive_and_validate_caps(struct options *opt) {
         }
     }
 
-    LONG_AND(opt->caps.propbit, untrusted_caps.propbit);
-    LONG_AND(opt->caps.evbit,   untrusted_caps.evbit);
+    LONG_AND(opt->caps.propbit, untrusted_caps_msg.caps.propbit);
+    LONG_AND(opt->caps.evbit,   untrusted_caps_msg.caps.evbit);
 #define APPLY_BITS(_evflag, _field) \
     if (LONG_TEST_BIT(opt->caps.evbit, _evflag)) \
-        LONG_AND(opt->caps._field, untrusted_caps._field); \
+        LONG_AND(opt->caps._field, untrusted_caps_msg.caps._field); \
     else \
         memset(opt->caps._field, 0, sizeof(opt->caps._field));
 
@@ -123,6 +123,28 @@ int receive_and_validate_caps(struct options *opt) {
     APPLY_BITS(EV_FF,  ffbit);
     APPLY_BITS(EV_SW,  swbit);
 #undef APPLY_BITS
+
+    /* use VM-provided name only if not already specified */
+    if (!opt->name && untrusted_caps_msg.name[0]) {
+        unsigned i;
+
+        opt->name = calloc(sizeof(untrusted_caps_msg.name), 1);
+        for (i = 0; i < sizeof(untrusted_caps_msg.name); i++) {
+            if (untrusted_caps_msg.name[i] == 0)
+                /* opt->name initially zero-ed, so no need to copy that \0 */
+                break;
+            /* allow only ASCII, excluding control characters */
+            if (untrusted_caps_msg.name[i] >= 0x20 && 
+                    untrusted_caps_msg.name[i] < 0x7f)
+                opt->name[i] = untrusted_caps_msg.name[i];
+            else {
+                fprintf(stderr, "Invalid characters in device name\n");
+                return -1;
+            }
+        }
+        /* make sure the name is terminated with \0 */
+        opt->name[sizeof(untrusted_caps_msg.name)-1] = 0;
+    }
 
     return 1;
 }
@@ -145,6 +167,7 @@ int send_bits(int fd, int ioctl_num, unsigned long *bits, size_t bits_count) {
 int register_device(struct options *opt, int fd) {
     struct uinput_user_dev uinput_dev = { 0 };
     int rc = 0;
+    char *domain_name = NULL;
 
     if (!rc)
         rc = send_bits(fd, UI_SET_EVBIT, opt->caps.evbit, EV_CNT);
@@ -169,8 +192,17 @@ int register_device(struct options *opt, int fd) {
         return -1;
     }
 
-    if (opt->name)
+    if (!opt->name)
+        opt->name = "Forwarded input device";
+    domain_name = getenv("QREXEC_REMOTE_DOMAIN");
+    if (domain_name) {
+        snprintf(uinput_dev.name, UINPUT_MAX_NAME_SIZE, "%s: %s",
+                domain_name, opt->name);
+        /* make sure string is terminated, in case it was truncated */
+        uinput_dev.name[UINPUT_MAX_NAME_SIZE-1] = 0;
+    } else {
         strncpy(uinput_dev.name, opt->name, UINPUT_MAX_NAME_SIZE);
+    }
     uinput_dev.id.bustype = BUS_USB;
     uinput_dev.id.vendor = opt->vendor;
     uinput_dev.id.product = opt->product;
@@ -319,7 +351,7 @@ int parse_options(struct options *opt, int argc, char **argv) {
     int o;
 
     memset(opt, 0, sizeof(*opt));
-    opt->name = "Forwarded input device";
+    opt->name = NULL;
     opt->vendor = 0xffff;
     opt->product = 0xffff;
     LONG_SET_BIT(opt->caps.evbit, EV_SYN);

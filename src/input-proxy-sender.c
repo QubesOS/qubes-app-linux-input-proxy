@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include <poll.h>
 #include <errno.h>
 #include <linux/input.h>
@@ -8,12 +10,14 @@
 #include "common.h"
 
 int send_caps(int fd) {
+    struct input_proxy_device_caps_msg caps_msg = { 0 };
     struct input_proxy_device_caps caps = { 0 };
     struct input_proxy_hello hello = {
         .version = INPUT_PROXY_PROTOCOL_VERSION,
-        .caps_size = sizeof caps
+        .caps_size = sizeof caps_msg
     };
     int rc = 0;
+    int i;
 
     if (rc != -1) rc = ioctl(fd, EVIOCGPROP(       sizeof caps.propbit), caps.propbit);
     if (rc != -1) rc = ioctl(fd, EVIOCGBIT(0,      sizeof caps.evbit),    caps.evbit);
@@ -29,10 +33,34 @@ int send_caps(int fd) {
         perror("ioctl get caps");
         return -1;
     }
+    caps_msg.caps = caps;
+
+    /* get name */
+    rc = ioctl(fd, EVIOCGNAME(sizeof caps_msg.name), caps_msg.name);
+    if (rc == -1) {
+        /* ignore the case of no name */
+        if (errno != ENOENT) {
+            perror("ioctl get name");
+            return -1;
+        }
+    } else {
+        for (i = 0; i < rc; i++) {
+            if (!caps_msg.name[i]) {
+                /* zero-out unused space */
+                memset(caps_msg.name+i, 0, sizeof(caps_msg.name)-i);
+                break;
+            }
+            /* replace non-ASCII chars with '_' */
+            if (caps_msg.name[i] < 0x20 || caps_msg.name[i] >= 0x7f)
+                caps_msg.name[i] = '_';
+        }
+        caps_msg.name[sizeof(caps_msg.name)-1] = 0;
+    }
+
     rc = write_all(1, &hello, sizeof(hello));
     if (rc == -1)
         return rc;
-    rc = write_all(1, &caps, sizeof(caps));
+    rc = write_all(1, &caps_msg, sizeof(caps_msg));
     return rc;
 }
 

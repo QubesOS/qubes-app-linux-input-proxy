@@ -27,4 +27,7 @@ struct input_proxy_device_caps {
     unsigned long swbit[BITS_TO_LONGS(SW_CNT)];
 };
 
-
+struct input_proxy_device_caps_msg {
+    struct input_proxy_device_caps caps;
+    char name[128];
+};
