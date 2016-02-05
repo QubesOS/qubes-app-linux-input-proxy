@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <poll.h>
+#include <errno.h>
 #include <linux/input.h>
 #include "protocol.h"
 #include "common.h"
@@ -41,6 +42,9 @@ int pass_event(int src_fd, int dst_fd) {
 
     rc = read_all(src_fd, &ev, sizeof(ev));
     if (rc == 0)
+        return 0;
+    /* treat device disconnect as EOF */
+    if (rc == -1 && errno == ENODEV)
         return 0;
     if (rc == -1) {
         perror("read");
@@ -119,8 +123,10 @@ int main(int argc, char **argv) {
         return 1;
 
     if (ioctl(fd, EVIOCGRAB, 0) == -1) {
-        perror("ioctl grab");
-        return 1;
+        if (errno != ENODEV) {
+            perror("ioctl grab");
+            return 1;
+        }
     }
 
     close(fd);
