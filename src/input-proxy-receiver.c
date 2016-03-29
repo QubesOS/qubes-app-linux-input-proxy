@@ -334,6 +334,11 @@ int parse_options(struct options *opt, int argc, char **argv) {
                 LONG_SET_BIT(opt->caps.keybit, BTN_LEFT);
                 LONG_SET_BIT(opt->caps.keybit, BTN_RIGHT);
                 LONG_SET_BIT(opt->caps.keybit, BTN_MIDDLE);
+                LONG_SET_BIT(opt->caps.keybit, BTN_SIDE);
+                LONG_SET_BIT(opt->caps.keybit, BTN_EXTRA);
+                LONG_SET_BIT(opt->caps.keybit, BTN_FORWARD);
+                LONG_SET_BIT(opt->caps.keybit, BTN_BACK);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TASK);
                 break;
             case 'k':
                 LONG_SET_BIT(opt->caps.evbit, EV_KEY);
