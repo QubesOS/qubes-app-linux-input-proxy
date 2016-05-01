@@ -1,0 +1,22 @@
+#!/usr/bin/python
+#
+# Trigger "add" udev even for all input mouse/keyboard devices.
+# Used to retry qrexec confirmation dialogs after user login
+
+import subprocess
+import os
+import sys
+from stat import *
+
+eventFiles = os.listdir("/dev/input")
+for input_dev in eventFiles:
+    if 'event' in input_dev:  # if filename contains 'event'
+        eventFile = os.path.join("/dev/input", input_dev)
+        if S_ISCHR(os.stat(eventFile).st_mode) != 0:  # is character device?
+            udevreturn = subprocess.check_output([
+                "udevadm", "info", "--query=property", "--name=" + eventFile])
+            if 'ID_INPUT_MOUSE' in udevreturn or \
+                    'ID_INPUT_KEYBOARD' in udevreturn:
+                subprocess.call([
+                    "sudo", "/usr/bin/udevadm", "trigger",
+                    "--action=add", "--sysname-match=" + input_dev])

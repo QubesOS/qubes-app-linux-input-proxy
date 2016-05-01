@@ -57,6 +57,8 @@ make install DESTDIR=%{buildroot}
 %doc README.md
 %defattr(-,root,root,-)
 /usr/bin/input-proxy-sender
+/usr/bin/qubes-input-trigger
+%config(noreplace) /etc/xdg/autostart/qubes-input-trigger.desktop
 /lib/udev/rules.d/90-qubes-input-proxy.rules
 %{_unitdir}/qubes-input-sender-mouse@.service
 %{_unitdir}/qubes-input-sender-keyboard@.service

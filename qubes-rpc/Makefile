@@ -19,3 +19,7 @@ install:
 		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputMouse
 	install -m 0664 -D qubes.InputKeyboard.policy \
 		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputKeyboard
+	install -m 0755 -D qubes-input-trigger \
+		$(DESTDIR)/usr/bin/qubes-input-trigger
+	install -m 0644 -D qubes-input-trigger.desktop \
+		$(DESTDIR)/etc/xdg/autostart/qubes-input-trigger.desktop
