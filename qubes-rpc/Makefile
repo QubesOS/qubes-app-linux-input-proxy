@@ -10,6 +10,8 @@ install:
 		$(DESTDIR)/lib/udev/rules.d/90-qubes-input-proxy.rules
 	install -m 0644 qubes-uinput.rules \
 		$(DESTDIR)/lib/udev/rules.d/90-qubes-uinput.rules
+	install -m 0644 -D qubes-uinput.modules \
+		$(DESTDIR)/lib/modules-load.d/qubes-uinput.conf
 	install -d $(DESTDIR)/etc/qubes-rpc
 	install -m 0644 qubes.InputMouse $(DESTDIR)/etc/qubes-rpc
 	install -m 0644 qubes.InputKeyboard $(DESTDIR)/etc/qubes-rpc

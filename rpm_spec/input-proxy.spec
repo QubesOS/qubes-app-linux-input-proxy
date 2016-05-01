@@ -49,6 +49,7 @@ make install DESTDIR=%{buildroot}
 /etc/qubes-rpc/qubes.InputMouse
 /etc/qubes-rpc/qubes.InputKeyboard
 /lib/udev/rules.d/90-qubes-uinput.rules
+/lib/modules-load.d/qubes-uinput.conf
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputMouse
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputKeyboard
 
