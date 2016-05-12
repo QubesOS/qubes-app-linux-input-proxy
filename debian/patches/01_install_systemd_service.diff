@@ -1,0 +1,15 @@
+--- a/qubes-rpc/Makefile
++++ b/qubes-rpc/Makefile
+@@ -1,10 +1,10 @@
+ install:
+-	install -d $(DESTDIR)/usr/lib/systemd/system
++	install -d $(DESTDIR)/lib/systemd/system
+ 	install -m 0644 \
+ 		qubes-input-sender-keyboard@.service \
+ 		qubes-input-sender-keyboard-mouse@.service \
+ 		qubes-input-sender-mouse@.service \
+-		$(DESTDIR)/usr/lib/systemd/system
++		$(DESTDIR)/lib/systemd/system
+ 	install -d $(DESTDIR)/lib/udev/rules.d
+ 	install -m 0644 qubes-input-proxy.rules \
+ 		$(DESTDIR)/lib/udev/rules.d/90-qubes-input-proxy.rules
