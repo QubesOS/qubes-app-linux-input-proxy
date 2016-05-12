@@ -1,0 +1,9 @@
+qubes-input-proxy for Debian
+----------------------------
+The input proxy provides a mechanism for isolating physical input devices from dom0.
+It consists of two parts: sender and receiver.
+The sender runs in a qube with physical input device attached (for example USB VM). It sends events to a listener in dom0.
+The listener runs in dom0 and passes received events to an emulated device.
+
+ -- unman <unman@thirdeyesecurity.org>  Wed, 11 May 2016 12:35:29 +0000
+

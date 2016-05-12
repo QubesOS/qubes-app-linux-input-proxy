@@ -1,0 +1,23 @@
+Source: qubes-input-proxy
+Section: utils
+Priority: optional
+Maintainer: unman <unman@thirdeyesecurity.org>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage:  http://www.qubes-os.org
+
+Package: qubes-input-proxy-sender
+Architecture: any
+Depends: ${shlibs:Depends}, qubes-core-agent(>=3.0.25)
+Description: Provides Simple input events proxy
+ This package is intended to run in a qube with physical input device attached
+ (for example USB VM). It sends events to a listener in dom0 which passes
+ them to an emulated device.
+
+Package: qubes-input-proxy-receiver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Provides Simple input events proxy receiver
+ This package installs a listener in dom0 which passes events to an
+ emulated device.
+
