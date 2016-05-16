@@ -1,0 +1,5 @@
+qubes-input-proxy (1.0.4-1) unstable; urgency=low
+
+  * Initial release for debian
+
+ -- unman <unman@thirdeyesecurity.org>  Wed, 11 May 2016 12:35:29 +0000

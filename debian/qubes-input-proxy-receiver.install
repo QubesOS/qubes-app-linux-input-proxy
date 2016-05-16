@@ -1,0 +1,5 @@
+/usr/bin/input-proxy-receiver
+/etc/qubes-rpc/qubes.InputMouse
+/etc/qubes-rpc/qubes.InputKeyboard
+/lib/udev/rules.d/90-qubes-uinput.rules
+
