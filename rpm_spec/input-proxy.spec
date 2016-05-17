@@ -50,6 +50,8 @@ make install DESTDIR=%{buildroot}
 /etc/qubes-rpc/qubes.InputKeyboard
 /lib/udev/rules.d/90-qubes-uinput.rules
 /lib/modules-load.d/qubes-uinput.conf
+%{python_sitelib}/qubesinputproxy-*.egg-info/*
+%{python_sitelib}/qubesinputproxy
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputMouse
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputKeyboard
 
