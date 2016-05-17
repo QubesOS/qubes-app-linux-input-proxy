@@ -13,6 +13,11 @@
 
 #define UINPUT_DEVICE "/dev/uinput"
 
+/* compile workaround for older system */
+#ifndef SYN_MAX
+#define SYN_MAX 0xf
+#endif
+
 struct options {
     char *name;
     int vendor;
