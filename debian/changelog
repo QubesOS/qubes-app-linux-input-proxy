@@ -1,3 +1,9 @@
+qubes-input-proxy (1.0.6-1) wheezy; urgency=medium
+
+  * receiver: compile fix on Debian wheezy
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Wed, 01 Jun 2016 18:32:39 +0200
+
 qubes-input-proxy (1.0.5-1) wheezy; urgency=medium
 
   [ unman ]
