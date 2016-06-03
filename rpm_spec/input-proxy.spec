@@ -14,6 +14,7 @@ License:	GPLv2
 URL:		https://www.qubes-os.org/
 
 BuildRequires:	kernel-headers
+BuildRequires:	python-setuptools
 
 %description
 Simple input device proxy, which pass events from /dev/input/eventN device, to
