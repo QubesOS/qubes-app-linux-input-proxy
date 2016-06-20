@@ -85,27 +85,30 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
     def parse_one_event(self):
         event_type = None
         ignore = False
-        in_flags = False
+        in_event_data = False
         flags = {}
         detail = '0'
         for line in iter(
                 lambda: self.event_listener.stdout.readline().rstrip(), ''):
-            if ignore:
-                pass
-            elif line.startswith('EVENT'):
+            if line.startswith('EVENT'):
                 # EVENT type 17 (RawMotion)
                 event_type = line.split()[3].strip('()')
+                ignore = False
+            elif ignore:
+                pass
             elif not line.startswith('    '):
                 # non-event packet - for example device discovery, ignore
                 ignore = True
             elif line.startswith('    detail:'):
                 detail = line.split(':')[1].strip()
             elif line.startswith('    flags:'):
-                in_flags = True
+                in_event_data = True
+            elif line.startswith('    valuators:'):
+                in_event_data = True
             elif line.startswith('        '):
                 #         0: 120.34 (105.00)
                 #         1: -25.21 (-22.0)
-                if in_flags:
+                if in_event_data:
                     key, value = line.strip().split(':')
                     # use raw value
                     value = value.split()[1].strip('()')
@@ -114,11 +117,16 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
                     pass
             elif line.startswith('    '):
                 # other fields - ignore
-                in_flags = False
+                in_event_data = False
 
         if ignore:
             # retry
             return None
+        # xinput in fc20 didn't included unchanged values
+        if '0' in flags and '1' not in flags:
+            flags['1'] = '0.00'
+        if '1' in flags and '0' not in flags:
+            flags['0'] = '0.00'
         return [event_type, detail, flags]
 
     def assertNoEvent(self, msg=None, timeout=3000):
@@ -187,10 +195,10 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         self.emit_event('REL_Y', 1)
         self.emit_click('BTN_LEFT')
 
-        self.assertEvent(['RawMotion', '0', {'0': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'0': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'1': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'1': '1.00'}])
+        self.assertEvent(['RawMotion', '0', {'0': '1.00', '1': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'0': '1.00', '1': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'1': '1.00', '0': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'1': '1.00', '0': '0.00'}])
         self.assertEvent(['RawButtonPress', '1', {}])
         self.assertEvent(['RawButtonRelease', '1', {}])
 
@@ -216,10 +224,10 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         self.emit_event('REL_Y', 1)
         self.emit_click('BTN_LEFT')
 
-        self.assertEvent(['RawMotion', '0', {'0': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'0': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'1': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'1': '1.00'}])
+        self.assertEvent(['RawMotion', '0', {'0': '1.00', '1': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'0': '1.00', '1': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'1': '1.00', '0': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'1': '1.00', '0': '0.00'}])
         self.assertEvent(['RawButtonPress', '1', {}])
         self.assertEvent(['RawButtonRelease', '1', {}])
 
@@ -260,10 +268,10 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         self.emit_event('REL_Y', 1)
         self.emit_click('BTN_LEFT')
 
-        self.assertEvent(['RawMotion', '0', {'0': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'0': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'1': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'1': '1.00'}])
+        self.assertEvent(['RawMotion', '0', {'0': '1.00', '1': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'0': '1.00', '1': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'1': '1.00', '0': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'1': '1.00', '0': '0.00'}])
         self.assertEvent(['RawButtonPress', '1', {}])
         self.assertEvent(['RawButtonRelease', '1', {}])
 
@@ -295,10 +303,10 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         self.emit_event('REL_Y', 1)
         self.emit_click('BTN_LEFT')
 
-        self.assertEvent(['RawMotion', '0', {'0': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'0': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'1': '1.00'}])
-        self.assertEvent(['RawMotion', '0', {'1': '1.00'}])
+        self.assertEvent(['RawMotion', '0', {'0': '1.00', '1': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'0': '1.00', '1': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'1': '1.00', '0': '0.00'}])
+        self.assertEvent(['RawMotion', '0', {'1': '1.00', '0': '0.00'}])
         self.assertEvent(['RawButtonPress', '1', {}])
         self.assertEvent(['RawButtonRelease', '1', {}])
 
