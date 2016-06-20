@@ -39,6 +39,8 @@ mouse_events = ['BTN_LEFT', 'BTN_RIGHT', 'REL_X', 'REL_Y']
 class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
     def setUp(self):
         super(TC_00_InputProxy, self).setUp()
+        if self.template.startswith('whonix-'):
+            self.skipTest('No network on Whonix VMs during tests - python-uinput not installable')
         self.vm = self.create_vms(["input"])[0]
         self.vm.start(start_guid=False)
         if self.vm.run("python -c 'import uinput'", wait=True, gui=False) != 0:
