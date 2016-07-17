@@ -1,3 +1,14 @@
+qubes-input-proxy (1.0.7-1) wheezy; urgency=medium
+
+  * rpm/deb: add missing build-requires: python-setuptools
+  * travis: initial version
+  * debian: udevadm is in /bin
+  * tests: skip on Whonix templates
+  * tests: adjust for fc23-based dom0
+  * tests: fix test for mouse+keyboard devices
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 17 Jul 2016 05:24:01 +0200
+
 qubes-input-proxy (1.0.6-1) wheezy; urgency=medium
 
   * receiver: compile fix on Debian wheezy
