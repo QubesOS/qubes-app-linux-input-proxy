@@ -265,7 +265,7 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         self.qrexec_policy('qubes.InputKeyboard', self.vm.name, 'dom0')
         self.setUpDevice(mouse_events + keyboard_events)
         self.find_device_and_start_listener(
-            'pointer:{}: {}'.format(self.vm.name, 'Test input device'))
+            '{}: {}'.format(self.vm.name, 'Test input device'))
         self.emit_event('REL_X', 1)
         self.emit_event('REL_X', 1)
         self.emit_event('REL_Y', 1)
@@ -278,9 +278,6 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         self.assertEvent(['RawMotion', '0', {'1': '1.00', '0': '0.00'}])
         self.assertEvent(['RawButtonPress', '1', {}])
         self.assertEvent(['RawButtonRelease', '1', {}])
-
-        self.find_device_and_start_listener(
-            'keyboard:{}: {}'.format(self.vm.name, 'Test input device'))
 
         self.emit_click('KEY_A')
         self.emit_click('KEY_B')
