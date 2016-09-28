@@ -2,6 +2,7 @@ Simple input events proxy
 =========================
 
 This package consists of two tools:
+
 1. input-proxy-sender
 2. input-proxy-receiver
 
@@ -51,8 +52,8 @@ Security notice
 Keep in mind that VM to which your input devices are connected, has
 effectively control over your system. Because of this, benefits of using USB VM
 then are much smaller than using fully untrusted USB VM. Besides having control
-over your system, such VM can also sniff all the input your are entering there
-- for example passwords in case of keyboard.
+over your system, such VM can also sniff all the input your are entering there -
+for example passwords in case of keyboard.
 
 There is no simple way to protect against sniffing. But you can make it harder
 to exploit control over input devices.
@@ -75,13 +76,14 @@ Packages
 --------
 
 There are two packages available:
-1. qubes-input-proxy-sender - to be installed in VM with actual input device
-2. qubes-input-proxy - to be installed in dom0
+
+1. `qubes-input-proxy-sender` - to be installed in VM with actual input device
+2. `qubes-input-proxy` - to be installed in dom0
 
 Those packages already contains useful service files. The only thing you need
 to do, is to setup appropriate policy in
 `/etc/qubes-rpc/policy/qubes.InputMouse` (and maybe also
-`qubes.InputKeyboard`). Default policy dany any access.
+`qubes.InputKeyboard`). Default policy deny any access.
 
 Manual usage
 ------------
@@ -100,7 +102,7 @@ start `input-proxy-receiver`, for example `/etc/qubes-rpc/qubes.InputMouse`:
 
 Provide appropriate policy `/etc/qubes-rpc/policy/qubes.InputMouse`:
 
-    usbvm dom0 allow,user=root
+    sys-usb dom0 allow
 
 Then create systemd service in your USB VM, which will call
 `input-proxy-sender`, for example
