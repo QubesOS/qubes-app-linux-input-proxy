@@ -41,6 +41,8 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         super(TC_00_InputProxy, self).setUp()
         if self.template.startswith('whonix-'):
             self.skipTest('No network on Whonix VMs during tests - python-uinput not installable')
+        # for possible uinput library installation
+        self.enable_network()
         self.vm = self.create_vms(["input"])[0]
         self.vm.start(start_guid=False)
         if self.vm.run("python -c 'import uinput'", wait=True, gui=False) != 0:
