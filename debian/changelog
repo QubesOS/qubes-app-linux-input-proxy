@@ -1,3 +1,11 @@
+qubes-input-proxy (1.0.8-1) wheezy; urgency=medium
+
+  * tests: fix combined mouse+keyboard test
+  * Update README
+  * tests: enable networking before (trying to) download uinput module
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sat, 19 Nov 2016 22:04:28 +0100
+
 qubes-input-proxy (1.0.7-1) wheezy; urgency=medium
 
   * rpm/deb: add missing build-requires: python-setuptools
