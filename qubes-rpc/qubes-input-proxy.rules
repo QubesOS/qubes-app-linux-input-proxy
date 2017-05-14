@@ -1,8 +1,8 @@
-KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_MOUSE}=="1", ENV{ID_INPUT_KEYBOARD}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-mouse@%k.service"
+KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_MOUSE}=="1", ENV{ID_INPUT_KEY}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-mouse@%k.service"
 KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop qubes-input-sender-mouse@%k.service"
 
-KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_KEYBOARD}=="1", ENV{ID_INPUT_MOUSE}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-keyboard@%k.service"
+KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_KEY}=="1", ENV{ID_INPUT_MOUSE}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-keyboard@%k.service"
 KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop qubes-input-sender-keyboard@%k.service"
 
-KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_KEYBOARD}=="1", ENV{ID_INPUT_MOUSE}=="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-keyboard-mouse@%k.service"
+KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_KEY}=="1", ENV{ID_INPUT_MOUSE}=="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-keyboard-mouse@%k.service"
 KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop qubes-input-sender-keyboard-mouse@%k.service"
