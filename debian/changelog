@@ -1,3 +1,11 @@
+qubes-input-proxy (1.0.9-1) unstable; urgency=medium
+
+  * travis: drop debootstrap workaround
+  * Use ID_INPUT_KEY udev variable to detect "keyboard"
+  * travis: drop Qubes 3.1, add Qubes 4.0
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 14 May 2017 23:33:27 +0200
+
 qubes-input-proxy (1.0.8-1) wheezy; urgency=medium
 
   * tests: fix combined mouse+keyboard test
