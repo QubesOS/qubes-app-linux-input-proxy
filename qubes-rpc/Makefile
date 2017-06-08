@@ -23,3 +23,5 @@ install:
 		$(DESTDIR)/usr/bin/qubes-input-trigger
 	install -m 0644 -D qubes-input-trigger.desktop \
 		$(DESTDIR)/etc/xdg/autostart/qubes-input-trigger.desktop
+	install -m 0600 -D qubes-input-trigger.sudoers \
+		$(DESTDIR)/etc/sudoers.d/qubes-input-trigger

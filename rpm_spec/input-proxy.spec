@@ -59,6 +59,7 @@ make install DESTDIR=%{buildroot}
 %files sender
 %doc README.md
 %defattr(-,root,root,-)
+/etc/sudoers.d/qubes-input-trigger
 /usr/bin/input-proxy-sender
 /usr/bin/qubes-input-trigger
 %config(noreplace) /etc/xdg/autostart/qubes-input-trigger.desktop

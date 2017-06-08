@@ -1,0 +1,5 @@
+# Allow user to retry input-proxy startup after GUI session is established.
+# This is especially needed when qrexec policy is set to "ask", because it can
+# be allowed only when there is a way to ask the user.
+
+user ALL=(root) NOPASSWD:/bin/udevadm trigger --action=add --sysname-match=event[0-9]
