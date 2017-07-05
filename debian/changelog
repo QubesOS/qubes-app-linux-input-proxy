@@ -1,3 +1,14 @@
+qubes-input-proxy (1.0.10-1) unstable; urgency=medium
+
+  [ Andrew David Wong ]
+  * Move security warning to qubes-doc
+
+  [ Marek Marczykowski-Górecki ]
+  * Add sudo configuration for post-GUI startup trigger
+  * Ignore platform devices exposed by qemu in HVM
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Wed, 05 Jul 2017 14:31:46 +0200
+
 qubes-input-proxy (1.0.9-1) unstable; urgency=medium
 
   * travis: drop debootstrap workaround
