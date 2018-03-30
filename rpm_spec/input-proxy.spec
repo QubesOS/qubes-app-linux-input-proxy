@@ -15,6 +15,7 @@ URL:		https://www.qubes-os.org/
 
 BuildRequires:	kernel-headers
 BuildRequires:	python-setuptools
+BuildRequires:	python3-devel
 
 %description
 Simple input device proxy, which pass events from /dev/input/eventN device, to
@@ -53,6 +54,8 @@ make install DESTDIR=%{buildroot}
 /lib/modules-load.d/qubes-uinput.conf
 %{python_sitelib}/qubesinputproxy-*.egg-info/*
 %{python_sitelib}/qubesinputproxy
+%{python3_sitelib}/qubesinputproxy-*.egg-info/*
+%{python3_sitelib}/qubesinputproxy
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputMouse
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputKeyboard
 

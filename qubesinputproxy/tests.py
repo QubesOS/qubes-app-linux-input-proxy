@@ -28,7 +28,13 @@ import subprocess
 import time
 import select
 
-keyboard_events = ['KEY_' + x for x in string.uppercase] +\
+try:
+    # for core3 only
+    import asyncio
+except ImportError:
+    pass
+
+keyboard_events = ['KEY_' + x for x in string.ascii_uppercase] +\
     ['KEY_' + x for x in string.digits] +\
     ['KEY_ESC', 'KEY_MINUS', 'KEY_EQUAL', 'KEY_BACKSPACE', 'KEY_TAB',
         'KEY_LEFTBRACE', 'KEY_RIGHTBRACE', 'KEY_ENTER', 'KEY_LEFTCTRL']
@@ -45,13 +51,13 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         self.enable_network()
         self.vm = self.create_vms(["input"])[0]
         self.vm.start(start_guid=False)
-        if self.vm.run("python -c 'import uinput'", wait=True, gui=False) != 0:
+        if self.vm.run("python3 -c 'import uinput'", wait=True, gui=False) != 0:
             # If uinput module not installed, try to install it with pip
-            p = self.vm.run("pip install python-uinput 2>&1", passio_popen=True,
+            p = self.vm.run("pip3 install python-uinput 2>&1", passio_popen=True,
                 user="root", gui=False)
             (stdout, _) = p.communicate()
             if p.returncode != 0:
-                self.skipTest("python-uinput not installed and failed to "
+                self.skipTest("python3-uinput not installed and failed to "
                               "install it using pip: {}".format(stdout))
         if self.vm.run('modprobe uinput',
                 user="root", wait=True, gui=False) != 0:
@@ -63,26 +69,42 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         super(TC_00_InputProxy, self).tearDown()
 
     def destroyDevice(self):
-        self.device_pipe.write('dev.destroy()\n')
+        self.device_pipe.write(b'dev.destroy()\n')
         self.device_pipe.close()
 
     def setUpDevice(self, events, name="Test input device", vendor="0x1234"):
-        p = self.vm.run('python -i >/dev/null', user="root",
+        p = self.vm.run('python3 -i >/dev/null', user="root",
             passio_popen=True, gui=False)
         self.device_pipe = p.stdin
-        self.device_pipe.write('from uinput import *\n')
+        self.device_pipe.write(b'from uinput import *\n')
         self.device_pipe.write(
             'dev = Device([{}], name="{}", vendor={})\n'.format(
                 ','.join(events),
                 name,
                 vendor,
-            ))
+            ).encode())
+
+        try:
+            self.device_pipe.flush()
+        except AttributeError:
+            self.loop.run_until_complete(self.device_pipe.drain())
 
     def emit_event(self, event, value):
-        self.device_pipe.write('dev.emit({}, {})\n'.format(event, value))
+        self.device_pipe.write('dev.emit({}, {})\n'.format(event, value).encode())
+        try:
+            self.device_pipe.flush()
+        except AttributeError:
+            self.loop.run_until_complete(self.device_pipe.drain())
 
     def emit_click(self, key):
-        self.device_pipe.write('dev.emit_click({})\n'.format(key))
+        # don't use dev.emit_click, python-uinput 0.10.1 is buggy (do not
+        # send EV_SYN in between - X server driver ignore such events)
+        self.device_pipe.write('dev.emit({}, 1)\n'.format(key).encode())
+        self.device_pipe.write('dev.emit({}, 0)\n'.format(key).encode())
+        try:
+            self.device_pipe.flush()
+        except AttributeError:
+            self.loop.run_until_complete(self.device_pipe.drain())
 
     def parse_one_event(self):
         event_type = None
@@ -91,7 +113,10 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         flags = {}
         detail = '0'
         for line in iter(
-                lambda: self.event_listener.stdout.readline().rstrip(), ''):
+                lambda: self.event_listener.stdout.readline(), ''):
+            line = line.decode().rstrip()
+            if not line:
+                break
             if line.startswith('EVENT'):
                 # EVENT type 17 (RawMotion)
                 event_type = line.split()[3].strip('()')
@@ -169,23 +194,31 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         try_count = 20
         while device_id is None and try_count > 0:
             try:
-                device_id = subprocess.check_output(
-                    ['xinput', 'list', '--id-only', expected_name],
-                    stderr=open(os.devnull, 'w')
-                ).strip()
+                with open(os.devnull, 'w') as null:
+                    device_id = subprocess.check_output(
+                        ['xinput', 'list', '--id-only', expected_name],
+                        stderr=null
+                    ).strip()
             except subprocess.CalledProcessError:
                 try_count -= 1
-                time.sleep(0.2)
+                if hasattr(self, 'loop'):
+                    # core3 uses asyncio
+                    self.loop.run_until_complete(asyncio.sleep(0.2))
+                else:
+                    time.sleep(0.2)
 
         self.assertIsNotNone(device_id,
-            "Devive '{}' not found".format(expected_name))
+            "Device '{}' not found".format(expected_name))
+        device_id = device_id.decode()
 
         # terminate old listener if there was one
         if hasattr(self, 'event_listener'):
             self.event_listener.terminate()
+            self.event_listener.stdout.close()
+            self.event_listener.wait()
         self.event_listener = subprocess.Popen(
             ['xinput', 'test-xi2', '--root', device_id],
-            stdout=subprocess.PIPE)
+            stdout=subprocess.PIPE, bufsize=0)
         # wait for the listener to really listen for events
         time.sleep(0.5)
 
@@ -251,13 +284,13 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         self.emit_click('KEY_B')
         self.emit_click('KEY_C')
         self.emit_click('KEY_D')
-        for _ in xrange(4):
+        for _ in range(4):
             self.emit_click('KEY_BACKSPACE')
 
         for key in ('38', '56', '54', '40'):
             self.assertEvent(['RawKeyPress', key, {}])
             self.assertEvent(['RawKeyRelease', key, {}])
-        for _ in xrange(4):
+        for _ in range(4):
             self.assertEvent(['RawKeyPress', '22', {}])
             self.assertEvent(['RawKeyRelease', '22', {}])
 
@@ -285,13 +318,13 @@ class TC_00_InputProxy(qubes.tests.extra.ExtraTestCase):
         self.emit_click('KEY_B')
         self.emit_click('KEY_C')
         self.emit_click('KEY_D')
-        for _ in xrange(4):
+        for _ in range(4):
             self.emit_click('KEY_BACKSPACE')
 
         for key in ('38', '56', '54', '40'):
             self.assertEvent(['RawKeyPress', key, {}])
             self.assertEvent(['RawKeyRelease', key, {}])
-        for _ in xrange(4):
+        for _ in range(4):
             self.assertEvent(['RawKeyPress', '22', {}])
             self.assertEvent(['RawKeyRelease', '22', {}])
 
