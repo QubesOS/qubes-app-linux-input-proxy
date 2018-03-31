@@ -158,7 +158,7 @@ int send_bits(int fd, int ioctl_num, unsigned long *bits, size_t bits_count) {
     size_t i;
 
     for (i = 0; i < bits_count; i++) {
-        if (bits[i / BITS_PER_LONG] & (1UL<<(i & (BITS_PER_LONG-1)))) {
+        if (long_test_bit(bits, i, BITS_TO_LONGS(bits_count))) {
             if (ioctl(fd, ioctl_num, i) == -1) {
                 perror("ioctl set bit");
                 return -1;
