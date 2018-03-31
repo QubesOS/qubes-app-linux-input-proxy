@@ -170,6 +170,9 @@ int send_bits(int fd, int ioctl_num, unsigned long *bits, size_t bits_count) {
 
 
 int register_device(struct options *opt, int fd) {
+#if UINPUT_VERSION >= 5
+    struct uinput_setup uinput_setup = { 0 };
+#endif
     struct uinput_user_dev uinput_dev = { 0 };
     int rc = 0;
     char *domain_name = NULL;
@@ -208,14 +211,32 @@ int register_device(struct options *opt, int fd) {
     } else {
         strncpy(uinput_dev.name, opt->name, UINPUT_MAX_NAME_SIZE);
     }
+
     uinput_dev.id.bustype = BUS_USB;
     uinput_dev.id.vendor = opt->vendor;
     uinput_dev.id.product = opt->product;
     uinput_dev.id.version = 1;
-    /* TODO: support for uinput_dev.abs(min|max) */
-    if (write_all(fd, &uinput_dev, sizeof(uinput_dev)) == -1) {
+
+#if UINPUT_VERSION >= 5
+    uinput_setup.id = uinput_dev.id;
+    strncpy(uinput_setup.name, uinput_dev.name, sizeof(uinput_setup.name));
+
+    rc = ioctl(fd, UI_DEV_SETUP, &uinput_setup);
+    if (rc == -1 && errno != EINVAL) {
+        perror("ioctl UI_DEV_SETUP");
         return -1;
+    } else if (rc == -1 && errno == EINVAL) {
+#endif
+        size_t i;
+
+        /* fallback to old uinput_user_dev method */
+        /* TODO: support for uinput_dev.abs(min|max) */
+        if (write_all(fd, &uinput_dev, sizeof(uinput_dev)) == -1) {
+            return -1;
+        }
+#if UINPUT_VERSION >= 5
     }
+#endif
     if (ioctl(fd, UI_DEV_CREATE) == -1) {
         perror("ioctl dev create");
         return -1;

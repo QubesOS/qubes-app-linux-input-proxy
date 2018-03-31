@@ -29,5 +29,8 @@ struct input_proxy_device_caps {
 
 struct input_proxy_device_caps_msg {
     struct input_proxy_device_caps caps;
+    /* from this point, structure may be truncated after any field (and
+     * input_proxy_hello.caps_size set smaller accordingly); default value of 0
+     * is assumed then */
     char name[128];
 };
