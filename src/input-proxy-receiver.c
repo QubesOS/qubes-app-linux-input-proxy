@@ -26,6 +26,7 @@ struct options {
     char *name;
     int vendor;
     int product;
+    int log_level;
     struct input_proxy_device_caps caps;
     struct input_absinfo absinfo[ABS_CNT];
 };
@@ -78,8 +79,9 @@ int receive_and_validate_caps(struct options *opt) {
     }
 
     if (untrusted_hello.version != INPUT_PROXY_PROTOCOL_VERSION) {
-        fprintf(stderr, "Incompatible remote protocol version: %d\n",
-                untrusted_hello.version);
+        if (opt->log_level >= 1)
+            fprintf(stderr, "Incompatible remote protocol version: %d\n",
+                    untrusted_hello.version);
         return -1;
     }
 
@@ -148,7 +150,8 @@ int receive_and_validate_caps(struct options *opt) {
                     untrusted_caps_msg.name[i] < 0x7f)
                 opt->name[i] = untrusted_caps_msg.name[i];
             else {
-                fprintf(stderr, "Invalid characters in device name\n");
+                if (opt->log_level >= 1)
+                    fprintf(stderr, "Invalid characters in device name\n");
                 return -1;
             }
         }
@@ -332,45 +335,73 @@ int validate_and_forward_event(struct options *opt, int src, int dst) {
             ev.value = 0;
             break;
         case EV_KEY:
-            if (LONG_TEST_BIT(opt->caps.keybit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.keybit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_KEY code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled key */
+            }
             ev.code = untrusted_event.code;
             /* XXX values: 0: release, 1: press, 2: repeat */
             ev.value = untrusted_event.value;
             break;
         case EV_REL:
-            if (LONG_TEST_BIT(opt->caps.relbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.relbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_REL code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled axis */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
         case EV_ABS:
-            if (LONG_TEST_BIT(opt->caps.absbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.absbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_ABS code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled axis */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
         case EV_MSC:
-            if (LONG_TEST_BIT(opt->caps.mscbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.mscbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_MSC code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
         case EV_SW:
-            if (LONG_TEST_BIT(opt->caps.swbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.swbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_SW code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
         case EV_LED:
-            if (LONG_TEST_BIT(opt->caps.ledbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.ledbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_LED code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
         case EV_SND:
-            if (LONG_TEST_BIT(opt->caps.sndbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.sndbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_SND code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
@@ -378,7 +409,8 @@ int validate_and_forward_event(struct options *opt, int src, int dst) {
         case EV_FF:
         case EV_PWR:
         default:
-            fprintf(stderr, "Unsupported event type %d\n", ev.type);
+            if (opt->log_level >= 1)
+                fprintf(stderr, "Unsupported event type %d\n", ev.type);
             return -1;
     }
 
@@ -430,6 +462,8 @@ void usage() {
     fprintf(stderr, "   --name=NAME, -n - set device name\n");
     fprintf(stderr, "   --vendor=ID,    - set device vendor ID (hex)\n");
     fprintf(stderr, "  --product=ID,    - set device product ID (hex)\n");
+    fprintf(stderr, "  --quiet, -q      - mute messages about invalid data\n");
+    fprintf(stderr, "  --verbose, -v,   - verbose logging, warning: may contain sensitive info\n");
 }
 
 #define OPT_VENDOR  128
@@ -443,6 +477,8 @@ int parse_options(struct options *opt, int argc, char **argv) {
         { "name",      1, 0, 'n' },
         { "vendor",    1, 0, OPT_VENDOR },
         { "product",   1, 0, OPT_PRODUCT },
+        { "quiet",     0, 0, 'q' },
+        { "verbose",   0, 0, 'v' },
         { 0 }
     };
     int o;
@@ -453,7 +489,7 @@ int parse_options(struct options *opt, int argc, char **argv) {
     opt->product = 0xffff;
     LONG_SET_BIT(opt->caps.evbit, EV_SYN);
 
-    while ((o = getopt_long(argc, argv, "mktn:v:p:", opts, NULL)) != -1) {
+    while ((o = getopt_long(argc, argv, "mktn:v:p:qv", opts, NULL)) != -1) {
         switch (o) {
             case 'm':
                 LONG_SET_BIT(opt->caps.evbit, EV_REL);
@@ -514,6 +550,12 @@ int parse_options(struct options *opt, int argc, char **argv) {
             case OPT_PRODUCT:
                 opt->product = strtoul(optarg, NULL, 16);
                 break;
+            case 'q':
+                opt->log_level--;
+                break;
+            case 'v':
+                opt->log_level++;
+                break;
             default:
                 usage();
                 return -1;
@@ -531,6 +573,9 @@ int main(int argc, char **argv) {
     struct options opt = { 0 };
     int fd = -1;
     int rc;
+
+    /* defaults */
+    opt.log_level = 1;
 
     rc = parse_options(&opt, argc, argv);
     if (rc == -1)
