@@ -18,6 +18,10 @@
 #define SYN_MAX 0xf
 #endif
 
+/* do not create device, send events to stdout, also do not read from stdin
+ * - useful for testing */
+// #define FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+
 struct options {
     char *name;
     int vendor;
@@ -378,30 +382,38 @@ int validate_and_forward_event(struct options *opt, int src, int dst) {
             return -1;
     }
 
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
     rc = write_all(dst, &ev, sizeof(ev));
     if (rc == -1)
         perror("write event");
+#else
+    rc = sizeof(ev);
+#endif
     return rc;
 }
 
 int process_events(struct options *opt, int fd) {
     struct pollfd fds[] = {
         { .fd = 0,  .events = POLLIN, .revents = 0, },
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
         { .fd = fd, .events = POLLIN, .revents = 0, }
+#endif
     };
     int rc = 0;
 
-    while ((rc=poll(fds, 2, -1)) > 0) {
+    while ((rc=poll(fds, sizeof(fds)/sizeof(fds[0]), -1)) > 0) {
         if (fds[0].revents) {
             rc = validate_and_forward_event(opt, 0, fd);
             if (rc <= 0)
                 return rc;
         }
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
         if (fds[1].revents) {
             rc = validate_and_forward_event(opt, fd, 1);
             if (rc <= 0)
                 return rc;
         }
+#endif
     }
     if (rc == -1) {
         perror("poll");
@@ -511,7 +523,11 @@ int parse_options(struct options *opt, int argc, char **argv) {
     return 0;
 }
 
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+int input_proxy_receiver_main(int argc, char **argv) {
+#else
 int main(int argc, char **argv) {
+#endif
     struct options opt;
     int fd;
     int rc;
@@ -524,6 +540,9 @@ int main(int argc, char **argv) {
     if (rc <= 0)
         return rc == -1;
 
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+    fd = 1;
+#else
     fd = open(UINPUT_DEVICE, O_RDWR);
     if (fd == -1) {
         perror("open " UINPUT_DEVICE);
@@ -535,6 +554,7 @@ int main(int argc, char **argv) {
         close(fd);
         return 1;
     }
+#endif
 
     rc = process_events(&opt, fd);
     if (rc == -1) {
