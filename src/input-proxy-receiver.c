@@ -23,6 +23,7 @@ struct options {
     int vendor;
     int product;
     struct input_proxy_device_caps caps;
+    struct input_absinfo absinfo[ABS_CNT];
 };
 
 void long_and(unsigned long *dst, unsigned long *src, size_t longs_count) {
@@ -61,7 +62,7 @@ void long_set_bit(unsigned long *bitfield, int bit, size_t bitfield_size) {
 int receive_and_validate_caps(struct options *opt) {
     struct input_proxy_device_caps_msg untrusted_caps_msg;
     struct input_proxy_hello untrusted_hello;
-    size_t caps_size;
+    size_t caps_size, i;
     int rc;
 
     rc = read_all(0, &untrusted_hello, sizeof(untrusted_hello));
@@ -151,6 +152,29 @@ int receive_and_validate_caps(struct options *opt) {
         opt->name[sizeof(untrusted_caps_msg.name)-1] = 0;
     }
 
+    /* copy input_absinfo for EV_ABS; if given info is missing, disable that
+     * axis */
+    for (i = 0; i < ABS_CNT; i++) {
+        if (LONG_TEST_BIT(opt->caps.absbit, i)) {
+            if (!untrusted_caps_msg.absinfo[i].minimum &&
+                    !untrusted_caps_msg.absinfo[i].maximum) {
+                /* no axis limits are provided, disable it */
+                opt->caps.absbit[i / BITS_PER_LONG] &= ~(1UL<<(i & (BITS_PER_LONG-1)));
+                continue;
+            }
+            /* here is place for some validation of axis data, if we come up
+             * with any - in addition to those done by Linux kernel, and later
+             * input driver */
+            opt->absinfo[i].value = untrusted_caps_msg.absinfo[i].value;
+            opt->absinfo[i].minimum = untrusted_caps_msg.absinfo[i].minimum;
+            opt->absinfo[i].maximum = untrusted_caps_msg.absinfo[i].maximum;
+            opt->absinfo[i].resolution =
+                untrusted_caps_msg.absinfo[i].resolution;
+            opt->absinfo[i].fuzz = untrusted_caps_msg.absinfo[i].fuzz;
+            opt->absinfo[i].flat = untrusted_caps_msg.absinfo[i].flat;
+        }
+    }
+
     return 1;
 }
 
@@ -168,6 +192,26 @@ int send_bits(int fd, int ioctl_num, unsigned long *bits, size_t bits_count) {
     return 0;
 }
 
+#if UINPUT_VERSION >= 5
+int send_absinfo(int fd,
+        unsigned long abs_bits[BITS_TO_LONGS(ABS_CNT)],
+        struct input_absinfo *absinfo) {
+    struct uinput_abs_setup absinfo_setup;
+    size_t i;
+
+    for (i = 0; i < ABS_CNT; i++) {
+        if (long_test_bit(abs_bits, i, BITS_TO_LONGS(ABS_CNT))) {
+            absinfo_setup.code = i;
+            absinfo_setup.absinfo = absinfo[i];
+            if (ioctl(fd, UI_ABS_SETUP, &absinfo_setup) == -1) {
+                perror("ioctl set absinfo");
+                return -1;
+            }
+        }
+    }
+    return 0;
+}
+#endif
 
 int register_device(struct options *opt, int fd) {
 #if UINPUT_VERSION >= 5
@@ -230,11 +274,26 @@ int register_device(struct options *opt, int fd) {
         size_t i;
 
         /* fallback to old uinput_user_dev method */
-        /* TODO: support for uinput_dev.abs(min|max) */
+        if (LONG_TEST_BIT(opt->caps.evbit, EV_ABS)) {
+            for (i = 0; i < ABS_CNT; i++) {
+                if (LONG_TEST_BIT(opt->caps.absbit, i)) {
+                    uinput_dev.absmax[i] = opt->absinfo[i].maximum;
+                    uinput_dev.absmin[i] = opt->absinfo[i].minimum;
+                    uinput_dev.absfuzz[i] = opt->absinfo[i].fuzz;
+                    uinput_dev.absflat[i] = opt->absinfo[i].flat;
+                }
+            }
+        }
         if (write_all(fd, &uinput_dev, sizeof(uinput_dev)) == -1) {
             return -1;
         }
 #if UINPUT_VERSION >= 5
+    } else {
+        /* new method worked, send absinfo using new method */
+        if (!rc && LONG_TEST_BIT(opt->caps.evbit, EV_ABS))
+            rc = send_absinfo(fd, opt->caps.absbit, opt->absinfo);
+        if (rc == -1)
+            return -1;
     }
 #endif
     if (ioctl(fd, UI_DEV_CREATE) == -1) {
@@ -407,7 +466,32 @@ int parse_options(struct options *opt, int argc, char **argv) {
                 break;
             case 't':
                 LONG_SET_BIT(opt->caps.evbit, EV_ABS);
-                /* TODO: absmax */
+                /* TODO: some configuration for that */
+                memset(opt->caps.absbit, 0xff, sizeof(opt->caps.absbit));
+                LONG_SET_BIT(opt->caps.evbit, EV_KEY);
+                LONG_SET_BIT(opt->caps.keybit, BTN_DIGI);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOUCH);
+                LONG_SET_BIT(opt->caps.keybit, BTN_LEFT);
+                LONG_SET_BIT(opt->caps.keybit, BTN_RIGHT);
+                LONG_SET_BIT(opt->caps.keybit, BTN_MIDDLE);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_PEN);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_RUBBER);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_BRUSH);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_PENCIL);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_AIRBRUSH);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_FINGER);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_MOUSE);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_LENS);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_DOUBLETAP);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_TRIPLETAP);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_QUADTAP);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_QUINTTAP);
+                LONG_SET_BIT(opt->caps.keybit, BTN_STYLUS);
+                LONG_SET_BIT(opt->caps.keybit, BTN_STYLUS2);
+                /* not available with older headers */
+#               ifdef BTN_STYLUS3
+                LONG_SET_BIT(opt->caps.keybit, BTN_STYLUS3);
+#               endif
                 break;
             case 'n':
                 opt->name = optarg;
