@@ -249,7 +249,7 @@ int register_device(struct options *opt, int fd) {
     }
 
     if (!opt->name)
-        opt->name = "Forwarded input device";
+        opt->name = strdup("Forwarded input device");
     domain_name = getenv("QREXEC_REMOTE_DOMAIN");
     if (domain_name) {
         snprintf(uinput_dev.name, UINPUT_MAX_NAME_SIZE, "%s: %s",
@@ -528,8 +528,8 @@ int input_proxy_receiver_main(int argc, char **argv) {
 #else
 int main(int argc, char **argv) {
 #endif
-    struct options opt;
-    int fd;
+    struct options opt = { 0 };
+    int fd = -1;
     int rc;
 
     rc = parse_options(&opt, argc, argv);
@@ -537,8 +537,10 @@ int main(int argc, char **argv) {
         return 1;
 
     rc = receive_and_validate_caps(&opt);
-    if (rc <= 0)
-        return rc == -1;
+    if (rc <= 0) {
+        rc = (rc == -1);
+        goto out;
+    }
 
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
     fd = 1;
@@ -546,22 +548,28 @@ int main(int argc, char **argv) {
     fd = open(UINPUT_DEVICE, O_RDWR);
     if (fd == -1) {
         perror("open " UINPUT_DEVICE);
-        return 1;
+        rc = 1;
+        goto out;
     }
 
     rc = register_device(&opt, fd);
     if (rc == -1) {
-        close(fd);
-        return 1;
+        rc = 1;
+        goto out;
     }
 #endif
 
     rc = process_events(&opt, fd);
     if (rc == -1) {
-        close(fd);
-        return 1;
+        rc = 1;
+        goto out;
     }
 
-    close(fd);
-    return 0;
+    rc = 0;
+out:
+    if (fd != -1)
+        close(fd);
+    if (opt.name)
+        free(opt.name);
+    return rc;
 }
