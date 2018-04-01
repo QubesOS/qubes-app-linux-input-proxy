@@ -42,6 +42,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         "--mouse",
         "--keyboard",
         "--tablet",
+        "--quiet",
     };
 
     if (Size > PIPE_SZ) {
@@ -68,7 +69,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     /* not needed anymore since we'we written all the data */
     close(pipe_fd[1]);
 
-    input_proxy_receiver_main(4, argv);
+    input_proxy_receiver_main(5, argv);
     return 0;
 
 out_pipe:
