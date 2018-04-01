@@ -34,6 +34,18 @@ import time
 import select
 
 try:
+    # python3
+    from unittest.mock import ANY
+except ImportError:
+    # python2
+    class _ANY(object):
+        def __eq__(self, other): return True
+
+        def __ne__(self, other): return False
+
+        def __repr__(self): return '<ANY>'
+    ANY = _ANY()
+try:
     # for core3 only
     import asyncio
 except ImportError:
@@ -45,6 +57,21 @@ keyboard_events = ['KEY_' + x for x in string.ascii_uppercase] +\
         'KEY_LEFTBRACE', 'KEY_RIGHTBRACE', 'KEY_ENTER', 'KEY_LEFTCTRL']
 
 mouse_events = ['BTN_LEFT', 'BTN_RIGHT', 'REL_X', 'REL_Y']
+
+# need to extended ABS_* to include min/max values
+tablet_events = [
+    'BTN_TOUCH',
+    'BTN_LEFT',
+    'BTN_RIGHT',
+    'BTN_MIDDLE',
+    'BTN_TOOL_PEN',
+    'BTN_TOOL_RUBBER',
+    'BTN_TOOL_MOUSE',
+    'ABS_X + (0, 65535, 0, 0)',
+    'ABS_Y + (0, 65535, 0, 0)',
+    'ABS_MT_TOOL_X + (0, 1024, 0, 0)',
+    'ABS_MT_TOOL_Y + (0, 768, 0, 0)',
+    'ABS_PRESSURE + (0, 511, 0, 0)']
 
 
 class TC_00_InputProxy(ExtraTestCase):
@@ -289,6 +316,9 @@ class TC_00_InputProxy(ExtraTestCase):
         else:
             if service == 'qubes.InputMouse':
                 self.service_opts.append('--mouse')
+            elif service == 'qubes.InputTablet':
+                self.service_opts.append('--mouse')
+                self.service_opts.append('--tablet')
             elif service == 'qubes.InputKeyboard':
                 self.service_opts.append('--keyboard')
                 self.service_opts.append('--mouse')
@@ -427,6 +457,41 @@ class TC_00_InputProxy(ExtraTestCase):
         self.assertEvent(['RawMotion', '0', {'1': '1.00', '0': '0.00'}])
         self.assertEvent(['RawButtonPress', '1', {}])
         self.assertEvent(['RawButtonRelease', '1', {}])
+
+    def test_060_tablet(self):
+        """Test tablet events (absolute axis)"""
+        self.allow_service('qubes.InputTablet')
+        # try:
+        #     root_info = subprocess.check_output(['xwininfo', '-root']).decode()
+        #     for line in root_info.splitlines():
+        #         if 'Width:' in line:
+        #             _, _, width = line.partition('Width: ')
+        #         elif 'Height:' in line:
+        #             _, _, height = line.partition('Height: ')
+        #     tablet_events[1] = 'ABS_X + (0, {}, 0, 0)'.format(width)
+        #     tablet_events[2] = 'ABS_Y + (0, {}, 0, 0)'.format(height)
+        #     tablet_events[3] = 'ABS_MT_TOOL_X + (0, {}, 0, 0)'.format(width)
+        #     tablet_events[4] = 'ABS_MT_TOOL_Y + (0, {}, 0, 0)'.format(height)
+        # except subprocess.CalledProcessError:
+        #     pass
+
+        self.setUpDevice(tablet_events)
+        self.find_device_and_start_listener()
+
+        self.emit_event('BTN_TOUCH', 1)
+        self.emit_event('ABS_X', 15)
+        self.emit_event('ABS_Y', 188)
+        self.emit_event('BTN_TOUCH', 0)
+        # should be ignored
+        self.emit_event('REL_Y', 1)
+        self.emit_event('REL_Y', 1)
+
+        self.assertEvent(['RawTouchBegin', ANY, {'0': '0.00', '1': '0.00'}])
+        self.assertEvent(['RawTouchUpdate', ANY, {'0': '15.00', '1': '0.00'}])
+        self.assertEvent(['RawTouchUpdate', ANY, {'0': '15.00', '1': '188.00'}])
+        # FIXME: really (0, 0)?
+        self.assertEvent(['RawTouchEnd', ANY, {'0': '0.00', '1': '0.00'}])
+        self.assertNoEvent(msg="rel events should be ignored")
 
 
 def list_tests():
