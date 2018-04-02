@@ -1,6 +1,6 @@
 --- a/qubes-rpc/Makefile
 +++ b/qubes-rpc/Makefile
-@@ -1,10 +1,10 @@
+@@ -1,11 +1,11 @@
  install:
 -	install -d $(DESTDIR)/usr/lib/systemd/system
 +	install -d $(DESTDIR)/lib/systemd/system
@@ -8,6 +8,7 @@
  		qubes-input-sender-keyboard@.service \
  		qubes-input-sender-keyboard-mouse@.service \
  		qubes-input-sender-mouse@.service \
+ 		qubes-input-sender-tablet@.service \
 -		$(DESTDIR)/usr/lib/systemd/system
 +		$(DESTDIR)/lib/systemd/system
  	install -d $(DESTDIR)/lib/udev/rules.d

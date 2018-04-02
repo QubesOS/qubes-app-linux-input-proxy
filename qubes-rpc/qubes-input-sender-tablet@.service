@@ -1,0 +1,6 @@
+[Unit]
+Description=Qubes input proxy sender (tablet/touchscreen)
+After=qubes-qrexec-agent.service
+
+[Service]
+ExecStart=/usr/bin/qrexec-client-vm dom0 qubes.InputTablet /usr/bin/input-proxy-sender /dev/input/%i
