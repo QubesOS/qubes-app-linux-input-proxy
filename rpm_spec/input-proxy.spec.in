@@ -64,4 +64,4 @@ make install DESTDIR=%{buildroot}
 %{_unitdir}/qubes-input-sender-keyboard-mouse@.service
 
 %changelog
-
+@CHANGELOG@
