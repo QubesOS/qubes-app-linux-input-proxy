@@ -206,7 +206,7 @@ int register_device(struct options *opt, int fd) {
         /* make sure string is terminated, in case it was truncated */
         uinput_dev.name[UINPUT_MAX_NAME_SIZE-1] = 0;
     } else {
-        strncpy(uinput_dev.name, opt->name, UINPUT_MAX_NAME_SIZE);
+        strncpy(uinput_dev.name, opt->name, UINPUT_MAX_NAME_SIZE - 1);
     }
     uinput_dev.id.bustype = BUS_USB;
     uinput_dev.id.vendor = opt->vendor;
