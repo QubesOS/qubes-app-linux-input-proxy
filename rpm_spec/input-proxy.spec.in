@@ -1,10 +1,7 @@
 %define version %(cat version)
-%if 0%{?qubes_builder}
-%define _builddir %(pwd)
-%endif
     
 Name:		qubes-input-proxy
-Version:	%{version}
+Version:	@VERSION@
 Release:	1%{?dist}
 Obsoletes:	input-proxy
 Summary:	Simple input device proxy (receiver)
@@ -15,6 +12,8 @@ URL:		https://www.qubes-os.org/
 
 BuildRequires:	kernel-headers
 BuildRequires:	python-setuptools
+
+Source0: %{name}-%{version}.tar.gz
 
 %description
 Simple input device proxy, which pass events from /dev/input/eventN device, to
@@ -30,11 +29,7 @@ Simple input device proxy, which pass events from /dev/input/eventN device, to
 This package is sender part.
 
 %prep
-# we operate on the current directory, so no need to unpack anything
-# symlink is to generate useful debuginfo packages
-rm -f %{name}-%{version}
-ln -sf . %{name}-%{version}
-%setup -T -D
+%setup -q
 
 %build
 make %{?_smp_mflags} all
@@ -69,4 +64,4 @@ make install DESTDIR=%{buildroot}
 %{_unitdir}/qubes-input-sender-keyboard-mouse@.service
 
 %changelog
-
+@CHANGELOG@
