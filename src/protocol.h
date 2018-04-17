@@ -27,7 +27,23 @@ struct input_proxy_device_caps {
     unsigned long swbit[BITS_TO_LONGS(SW_CNT)];
 };
 
+/* linux/input/h:
+ *
+ * struct input_absinfo {
+ *     __s32 value;
+ *     __s32 minimum;
+ *     __s32 maximum;
+ *     __s32 fuzz;
+ *     __s32 flat;
+ *     __s32 resolution;
+ * };
+*/
+
 struct input_proxy_device_caps_msg {
     struct input_proxy_device_caps caps;
+    /* from this point, structure may be truncated after any field (and
+     * input_proxy_hello.caps_size set smaller accordingly); default value of 0
+     * is assumed then */
     char name[128];
+    struct input_absinfo absinfo[ABS_CNT];
 };

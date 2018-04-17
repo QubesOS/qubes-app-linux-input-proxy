@@ -1,4 +1,4 @@
-CFLAGS = -g -Wall -Wextra -Werror -O2 -std=c99
+CFLAGS += -g -Wall -Wextra -Werror -O2 -std=gnu99
 
 # See GCC bug #53229 and #64709
 CFLAGS += -Wno-missing-braces -Wno-missing-field-initializers

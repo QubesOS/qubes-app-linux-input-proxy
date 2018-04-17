@@ -1,1 +1,3 @@
 pkgs/
+*.pyc
+__pycache__

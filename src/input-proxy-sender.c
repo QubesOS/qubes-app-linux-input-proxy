@@ -57,6 +57,16 @@ int send_caps(int fd) {
         caps_msg.name[sizeof(caps_msg.name)-1] = 0;
     }
 
+    for (i = 0; i < ABS_CNT; i++) {
+        if (caps.absbit[i / BITS_PER_LONG] & (1UL<<(i & (BITS_PER_LONG-1)))) {
+            rc = ioctl(fd, EVIOCGABS(i), &caps_msg.absinfo[i]);
+            if (rc == -1) {
+                perror("ioctl get absinfo");
+                return -1;
+            }
+        }
+    }
+
     rc = write_all(1, &hello, sizeof(hello));
     if (rc == -1)
         return rc;

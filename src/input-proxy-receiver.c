@@ -18,11 +18,17 @@
 #define SYN_MAX 0xf
 #endif
 
+/* do not create device, send events to stdout, also do not read from stdin
+ * - useful for testing */
+// #define FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+
 struct options {
     char *name;
     int vendor;
     int product;
+    int log_level;
     struct input_proxy_device_caps caps;
+    struct input_absinfo absinfo[ABS_CNT];
 };
 
 void long_and(unsigned long *dst, unsigned long *src, size_t longs_count) {
@@ -61,7 +67,7 @@ void long_set_bit(unsigned long *bitfield, int bit, size_t bitfield_size) {
 int receive_and_validate_caps(struct options *opt) {
     struct input_proxy_device_caps_msg untrusted_caps_msg;
     struct input_proxy_hello untrusted_hello;
-    size_t caps_size;
+    size_t caps_size, i;
     int rc;
 
     rc = read_all(0, &untrusted_hello, sizeof(untrusted_hello));
@@ -73,8 +79,9 @@ int receive_and_validate_caps(struct options *opt) {
     }
 
     if (untrusted_hello.version != INPUT_PROXY_PROTOCOL_VERSION) {
-        fprintf(stderr, "Incompatible remote protocol version: %d\n",
-                untrusted_hello.version);
+        if (opt->log_level >= 1)
+            fprintf(stderr, "Incompatible remote protocol version: %d\n",
+                    untrusted_hello.version);
         return -1;
     }
 
@@ -143,12 +150,36 @@ int receive_and_validate_caps(struct options *opt) {
                     untrusted_caps_msg.name[i] < 0x7f)
                 opt->name[i] = untrusted_caps_msg.name[i];
             else {
-                fprintf(stderr, "Invalid characters in device name\n");
+                if (opt->log_level >= 1)
+                    fprintf(stderr, "Invalid characters in device name\n");
                 return -1;
             }
         }
         /* make sure the name is terminated with \0 */
         opt->name[sizeof(untrusted_caps_msg.name)-1] = 0;
+    }
+
+    /* copy input_absinfo for EV_ABS; if given info is missing, disable that
+     * axis */
+    for (i = 0; i < ABS_CNT; i++) {
+        if (LONG_TEST_BIT(opt->caps.absbit, i)) {
+            if (!untrusted_caps_msg.absinfo[i].minimum &&
+                    !untrusted_caps_msg.absinfo[i].maximum) {
+                /* no axis limits are provided, disable it */
+                opt->caps.absbit[i / BITS_PER_LONG] &= ~(1UL<<(i & (BITS_PER_LONG-1)));
+                continue;
+            }
+            /* here is place for some validation of axis data, if we come up
+             * with any - in addition to those done by Linux kernel, and later
+             * input driver */
+            opt->absinfo[i].value = untrusted_caps_msg.absinfo[i].value;
+            opt->absinfo[i].minimum = untrusted_caps_msg.absinfo[i].minimum;
+            opt->absinfo[i].maximum = untrusted_caps_msg.absinfo[i].maximum;
+            opt->absinfo[i].resolution =
+                untrusted_caps_msg.absinfo[i].resolution;
+            opt->absinfo[i].fuzz = untrusted_caps_msg.absinfo[i].fuzz;
+            opt->absinfo[i].flat = untrusted_caps_msg.absinfo[i].flat;
+        }
     }
 
     return 1;
@@ -158,7 +189,7 @@ int send_bits(int fd, int ioctl_num, unsigned long *bits, size_t bits_count) {
     size_t i;
 
     for (i = 0; i < bits_count; i++) {
-        if (bits[i / BITS_PER_LONG] & (1UL<<(i & (BITS_PER_LONG-1)))) {
+        if (long_test_bit(bits, i, BITS_TO_LONGS(bits_count))) {
             if (ioctl(fd, ioctl_num, i) == -1) {
                 perror("ioctl set bit");
                 return -1;
@@ -168,8 +199,31 @@ int send_bits(int fd, int ioctl_num, unsigned long *bits, size_t bits_count) {
     return 0;
 }
 
+#if UINPUT_VERSION >= 5
+int send_absinfo(int fd,
+        unsigned long abs_bits[BITS_TO_LONGS(ABS_CNT)],
+        struct input_absinfo *absinfo) {
+    struct uinput_abs_setup absinfo_setup;
+    size_t i;
+
+    for (i = 0; i < ABS_CNT; i++) {
+        if (long_test_bit(abs_bits, i, BITS_TO_LONGS(ABS_CNT))) {
+            absinfo_setup.code = i;
+            absinfo_setup.absinfo = absinfo[i];
+            if (ioctl(fd, UI_ABS_SETUP, &absinfo_setup) == -1) {
+                perror("ioctl set absinfo");
+                return -1;
+            }
+        }
+    }
+    return 0;
+}
+#endif
 
 int register_device(struct options *opt, int fd) {
+#if UINPUT_VERSION >= 5
+    struct uinput_setup uinput_setup = { 0 };
+#endif
     struct uinput_user_dev uinput_dev = { 0 };
     int rc = 0;
     char *domain_name = NULL;
@@ -198,7 +252,7 @@ int register_device(struct options *opt, int fd) {
     }
 
     if (!opt->name)
-        opt->name = "Forwarded input device";
+        opt->name = strdup("Forwarded input device");
     domain_name = getenv("QREXEC_REMOTE_DOMAIN");
     if (domain_name) {
         snprintf(uinput_dev.name, UINPUT_MAX_NAME_SIZE, "%s: %s",
@@ -208,14 +262,47 @@ int register_device(struct options *opt, int fd) {
     } else {
         strncpy(uinput_dev.name, opt->name, UINPUT_MAX_NAME_SIZE - 1);
     }
+
     uinput_dev.id.bustype = BUS_USB;
     uinput_dev.id.vendor = opt->vendor;
     uinput_dev.id.product = opt->product;
     uinput_dev.id.version = 1;
-    /* TODO: support for uinput_dev.abs(min|max) */
-    if (write_all(fd, &uinput_dev, sizeof(uinput_dev)) == -1) {
+
+#if UINPUT_VERSION >= 5
+    uinput_setup.id = uinput_dev.id;
+    strncpy(uinput_setup.name, uinput_dev.name, sizeof(uinput_setup.name));
+
+    rc = ioctl(fd, UI_DEV_SETUP, &uinput_setup);
+    if (rc == -1 && errno != EINVAL) {
+        perror("ioctl UI_DEV_SETUP");
         return -1;
+    } else if (rc == -1 && errno == EINVAL) {
+#endif
+        size_t i;
+
+        /* fallback to old uinput_user_dev method */
+        if (LONG_TEST_BIT(opt->caps.evbit, EV_ABS)) {
+            for (i = 0; i < ABS_CNT; i++) {
+                if (LONG_TEST_BIT(opt->caps.absbit, i)) {
+                    uinput_dev.absmax[i] = opt->absinfo[i].maximum;
+                    uinput_dev.absmin[i] = opt->absinfo[i].minimum;
+                    uinput_dev.absfuzz[i] = opt->absinfo[i].fuzz;
+                    uinput_dev.absflat[i] = opt->absinfo[i].flat;
+                }
+            }
+        }
+        if (write_all(fd, &uinput_dev, sizeof(uinput_dev)) == -1) {
+            return -1;
+        }
+#if UINPUT_VERSION >= 5
+    } else {
+        /* new method worked, send absinfo using new method */
+        if (!rc && LONG_TEST_BIT(opt->caps.evbit, EV_ABS))
+            rc = send_absinfo(fd, opt->caps.absbit, opt->absinfo);
+        if (rc == -1)
+            return -1;
     }
+#endif
     if (ioctl(fd, UI_DEV_CREATE) == -1) {
         perror("ioctl dev create");
         return -1;
@@ -248,45 +335,73 @@ int validate_and_forward_event(struct options *opt, int src, int dst) {
             ev.value = 0;
             break;
         case EV_KEY:
-            if (LONG_TEST_BIT(opt->caps.keybit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.keybit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_KEY code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled key */
+            }
             ev.code = untrusted_event.code;
             /* XXX values: 0: release, 1: press, 2: repeat */
             ev.value = untrusted_event.value;
             break;
         case EV_REL:
-            if (LONG_TEST_BIT(opt->caps.relbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.relbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_REL code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled axis */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
         case EV_ABS:
-            if (LONG_TEST_BIT(opt->caps.absbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.absbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_ABS code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled axis */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
         case EV_MSC:
-            if (LONG_TEST_BIT(opt->caps.mscbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.mscbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_MSC code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
         case EV_SW:
-            if (LONG_TEST_BIT(opt->caps.swbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.swbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_SW code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
         case EV_LED:
-            if (LONG_TEST_BIT(opt->caps.ledbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.ledbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_LED code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
         case EV_SND:
-            if (LONG_TEST_BIT(opt->caps.sndbit, untrusted_event.code) == 0)
+            if (LONG_TEST_BIT(opt->caps.sndbit, untrusted_event.code) == 0) {
+                if (opt->log_level >= 2)
+                    fprintf(stderr, "Ignoring event EV_SND code %#x value %#x\n",
+                            untrusted_event.code, untrusted_event.value);
                 return 1; /* ignore unsupported/disabled */
+            }
             ev.code = untrusted_event.code;
             ev.value = untrusted_event.value;
             break;
@@ -294,34 +409,43 @@ int validate_and_forward_event(struct options *opt, int src, int dst) {
         case EV_FF:
         case EV_PWR:
         default:
-            fprintf(stderr, "Unsupported event type %d\n", ev.type);
+            if (opt->log_level >= 1)
+                fprintf(stderr, "Unsupported event type %d\n", ev.type);
             return -1;
     }
 
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
     rc = write_all(dst, &ev, sizeof(ev));
     if (rc == -1)
         perror("write event");
+#else
+    rc = sizeof(ev);
+#endif
     return rc;
 }
 
 int process_events(struct options *opt, int fd) {
     struct pollfd fds[] = {
         { .fd = 0,  .events = POLLIN, .revents = 0, },
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
         { .fd = fd, .events = POLLIN, .revents = 0, }
+#endif
     };
     int rc = 0;
 
-    while ((rc=poll(fds, 2, -1)) > 0) {
+    while ((rc=poll(fds, sizeof(fds)/sizeof(fds[0]), -1)) > 0) {
         if (fds[0].revents) {
             rc = validate_and_forward_event(opt, 0, fd);
             if (rc <= 0)
                 return rc;
         }
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
         if (fds[1].revents) {
             rc = validate_and_forward_event(opt, fd, 1);
             if (rc <= 0)
                 return rc;
         }
+#endif
     }
     if (rc == -1) {
         perror("poll");
@@ -338,6 +462,8 @@ void usage() {
     fprintf(stderr, "   --name=NAME, -n - set device name\n");
     fprintf(stderr, "   --vendor=ID,    - set device vendor ID (hex)\n");
     fprintf(stderr, "  --product=ID,    - set device product ID (hex)\n");
+    fprintf(stderr, "  --quiet, -q      - mute messages about invalid data\n");
+    fprintf(stderr, "  --verbose, -v,   - verbose logging, warning: may contain sensitive info\n");
 }
 
 #define OPT_VENDOR  128
@@ -351,6 +477,8 @@ int parse_options(struct options *opt, int argc, char **argv) {
         { "name",      1, 0, 'n' },
         { "vendor",    1, 0, OPT_VENDOR },
         { "product",   1, 0, OPT_PRODUCT },
+        { "quiet",     0, 0, 'q' },
+        { "verbose",   0, 0, 'v' },
         { 0 }
     };
     int o;
@@ -361,7 +489,7 @@ int parse_options(struct options *opt, int argc, char **argv) {
     opt->product = 0xffff;
     LONG_SET_BIT(opt->caps.evbit, EV_SYN);
 
-    while ((o = getopt_long(argc, argv, "mktn:v:p:", opts, NULL)) != -1) {
+    while ((o = getopt_long(argc, argv, "mktn:v:p:qv", opts, NULL)) != -1) {
         switch (o) {
             case 'm':
                 LONG_SET_BIT(opt->caps.evbit, EV_REL);
@@ -386,7 +514,32 @@ int parse_options(struct options *opt, int argc, char **argv) {
                 break;
             case 't':
                 LONG_SET_BIT(opt->caps.evbit, EV_ABS);
-                /* TODO: absmax */
+                /* TODO: some configuration for that */
+                memset(opt->caps.absbit, 0xff, sizeof(opt->caps.absbit));
+                LONG_SET_BIT(opt->caps.evbit, EV_KEY);
+                LONG_SET_BIT(opt->caps.keybit, BTN_DIGI);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOUCH);
+                LONG_SET_BIT(opt->caps.keybit, BTN_LEFT);
+                LONG_SET_BIT(opt->caps.keybit, BTN_RIGHT);
+                LONG_SET_BIT(opt->caps.keybit, BTN_MIDDLE);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_PEN);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_RUBBER);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_BRUSH);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_PENCIL);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_AIRBRUSH);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_FINGER);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_MOUSE);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_LENS);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_DOUBLETAP);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_TRIPLETAP);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_QUADTAP);
+                LONG_SET_BIT(opt->caps.keybit, BTN_TOOL_QUINTTAP);
+                LONG_SET_BIT(opt->caps.keybit, BTN_STYLUS);
+                LONG_SET_BIT(opt->caps.keybit, BTN_STYLUS2);
+                /* not available with older headers */
+#               ifdef BTN_STYLUS3
+                LONG_SET_BIT(opt->caps.keybit, BTN_STYLUS3);
+#               endif
                 break;
             case 'n':
                 opt->name = optarg;
@@ -397,6 +550,12 @@ int parse_options(struct options *opt, int argc, char **argv) {
             case OPT_PRODUCT:
                 opt->product = strtoul(optarg, NULL, 16);
                 break;
+            case 'q':
+                opt->log_level--;
+                break;
+            case 'v':
+                opt->log_level++;
+                break;
             default:
                 usage();
                 return -1;
@@ -406,37 +565,56 @@ int parse_options(struct options *opt, int argc, char **argv) {
     return 0;
 }
 
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+int input_proxy_receiver_main(int argc, char **argv) {
+#else
 int main(int argc, char **argv) {
-    struct options opt;
-    int fd;
+#endif
+    struct options opt = { 0 };
+    int fd = -1;
     int rc;
+
+    /* defaults */
+    opt.log_level = 1;
 
     rc = parse_options(&opt, argc, argv);
     if (rc == -1)
         return 1;
 
     rc = receive_and_validate_caps(&opt);
-    if (rc <= 0)
-        return rc == -1;
+    if (rc <= 0) {
+        rc = (rc == -1);
+        goto out;
+    }
 
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+    fd = 1;
+#else
     fd = open(UINPUT_DEVICE, O_RDWR);
     if (fd == -1) {
         perror("open " UINPUT_DEVICE);
-        return 1;
+        rc = 1;
+        goto out;
     }
 
     rc = register_device(&opt, fd);
     if (rc == -1) {
-        close(fd);
-        return 1;
+        rc = 1;
+        goto out;
     }
+#endif
 
     rc = process_events(&opt, fd);
     if (rc == -1) {
-        close(fd);
-        return 1;
+        rc = 1;
+        goto out;
     }
 
-    close(fd);
-    return 0;
+    rc = 0;
+out:
+    if (fd != -1)
+        close(fd);
+    if (opt.name)
+        free(opt.name);
+    return rc;
 }

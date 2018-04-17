@@ -6,6 +6,10 @@ ENV{ID_PATH}=="acpi-*", GOTO="qubes_input_proxy_end"
 ENV{ID_PATH}=="platform-*", GOTO="qubes_input_proxy_end"
 ENV{ID_MODEL}=="QEMU_USB_Tablet", GOTO="qubes_input_proxy_end"
 
+KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_TABLET}=="1", ENV{ID_INPUT_KEY}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-tablet@%k.service"
+KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_TOUCHSCREEN}=="1", ENV{ID_INPUT_KEY}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-tablet@%k.service"
+KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop qubes-input-sender-tablet@%k.service"
+
 KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_MOUSE}=="1", ENV{ID_INPUT_KEY}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-mouse@%k.service"
 KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop qubes-input-sender-mouse@%k.service"
 
