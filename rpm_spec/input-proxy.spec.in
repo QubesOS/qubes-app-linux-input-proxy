@@ -23,6 +23,8 @@ This package is receiver part.
 
 %package sender
 Summary:    Simple input device proxy (sender)
+%{?systemd_requires}
+BuildRequires:  systemd
 
 %description sender
 Simple input device proxy, which pass events from /dev/input/eventN device, to
