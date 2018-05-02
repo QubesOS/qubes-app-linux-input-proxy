@@ -1,3 +1,36 @@
+qubes-input-proxy (1.0.11-1) unstable; urgency=medium
+
+  [ Frédéric Pierret ]
+  * Fix GCC8 warnings
+  * Create .spec.in and Source0
+  * spec.in: add changelog placeholder
+
+  [ Marek Marczykowski-Górecki ]
+  * travis: update Fedora versions
+  * tests: Update for python 3
+  * tests: make them working locally, outside qubes dom0
+  * receiver: use helper function instead of raw bit operations
+  * receiver: use UI_DEV_SETUP for device initialization
+  * Add support for tablet/touchscreen devices
+  * tests: simple test for tablet device
+  * Add oss-fuzz integration
+  * receiver: fix mem and fd leak
+  * receiver: add --quiet and --verbose options
+  * Use --quiet in oss-fuzz integration
+  * tests: remove some unused buttons from tablet
+  * Add qrexec service related files for tablet devices
+  * gitignore update
+
+  [ Frédéric Pierret ]
+  * Use python3_pkgversion macro
+
+  [ Marek Marczykowski-Górecki ]
+  * travis: add centos7
+  * rpm: add missing BR: systemd
+  * rpm: add BR: python3-setuptools
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Wed, 02 May 2018 12:38:10 +0200
+
 qubes-input-proxy (1.0.10-1) unstable; urgency=medium
 
   [ Andrew David Wong ]
