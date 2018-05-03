@@ -16,7 +16,9 @@ for input_dev in eventFiles:
             udevreturn = subprocess.check_output([
                 "udevadm", "info", "--query=property", "--name=" + eventFile])
             if 'ID_INPUT_MOUSE' in udevreturn or \
-                    'ID_INPUT_KEYBOARD' in udevreturn:
+                    'ID_INPUT_KEYBOARD' in udevreturn or \
+                    'ID_INPUT_TABLET' in udevreturn or \
+                    'ID_INPUT_TOUCHSCREEN' in udevreturn:
                 subprocess.call([
                     "sudo", "/bin/udevadm", "trigger",
                     "--action=add", "--sysname-match=" + input_dev])
