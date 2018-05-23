@@ -1,3 +1,13 @@
+qubes-input-proxy (1.0.12-1) unstable; urgency=medium
+
+  [ Marek Marczykowski-Górecki ]
+  * Add tablet/touchscreen handling to qubes-input-trigger
+
+  [ Frédéric Pierret ]
+  * Fix remaining old define version
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Wed, 23 May 2018 22:01:08 +0200
+
 qubes-input-proxy (1.0.11-1) unstable; urgency=medium
 
   [ Frédéric Pierret ]
