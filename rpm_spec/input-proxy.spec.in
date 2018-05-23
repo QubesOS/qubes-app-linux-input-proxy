@@ -1,5 +1,3 @@
-%define version %(cat version)
-    
 Name:		qubes-input-proxy
 Version:	@VERSION@
 Release:	1%{?dist}
