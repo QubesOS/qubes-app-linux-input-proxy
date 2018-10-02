@@ -11,6 +11,7 @@ URL:		https://www.qubes-os.org/
 BuildRequires:	gcc
 BuildRequires:	kernel-headers
 BuildRequires:	python-setuptools
+BuildRequires:	python-devel
 BuildRequires:	python%{python3_pkgversion}-setuptools
 BuildRequires:	python%{python3_pkgversion}-devel
 
@@ -50,8 +51,8 @@ make install DESTDIR=%{buildroot}
 /etc/qubes-rpc/qubes.InputTablet
 /lib/udev/rules.d/90-qubes-uinput.rules
 /lib/modules-load.d/qubes-uinput.conf
-%{python_sitelib}/qubesinputproxy-*.egg-info/*
-%{python_sitelib}/qubesinputproxy
+%{python2_sitelib}/qubesinputproxy-*.egg-info/*
+%{python2_sitelib}/qubesinputproxy
 %{python3_sitelib}/qubesinputproxy-*.egg-info/*
 %{python3_sitelib}/qubesinputproxy
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputMouse
