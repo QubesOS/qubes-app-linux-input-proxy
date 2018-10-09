@@ -1,3 +1,12 @@
+qubes-input-proxy (1.0.13-1) unstable; urgency=medium
+
+  * rpm: add BR: gcc
+  * rpm: name python2 explicitly, instead of relying on python ->
+    python2 symlink
+  * travis: add fc28 and fc29
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 09 Oct 2018 02:53:00 +0200
+
 qubes-input-proxy (1.0.12-1) unstable; urgency=medium
 
   [ Marek Marczykowski-Górecki ]
