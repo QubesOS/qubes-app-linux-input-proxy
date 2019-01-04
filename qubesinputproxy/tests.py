@@ -61,8 +61,6 @@ mouse_events = ['BTN_LEFT', 'BTN_RIGHT', 'REL_X', 'REL_Y']
 # need to extended ABS_* to include min/max values
 tablet_events = [
     'BTN_TOUCH',
-    'BTN_RIGHT',
-    'BTN_MIDDLE',
     'ABS_X + (0, 65535, 0, 0)',
     'ABS_Y + (0, 65535, 0, 0)',
     'ABS_MT_TOOL_X + (0, 1024, 0, 0)',
