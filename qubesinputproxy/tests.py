@@ -219,6 +219,9 @@ class TC_00_InputProxy(ExtraTestCase):
                     key, value = line.strip().split(':')
                     # use raw value
                     value = value.split()[1].strip('()')
+                    # round the value (to combat Xorg's float usage) and
+                    # convert back to %.2f (to keep the format)
+                    value = '{:.2f}'.format(round(float(value)))
                     flags[key] = value
                 else:
                     pass
