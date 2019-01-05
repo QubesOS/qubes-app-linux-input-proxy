@@ -475,17 +475,22 @@ class TC_00_InputProxy(ExtraTestCase):
         self.setUpDevice(tablet_events)
         self.find_device_and_start_listener()
 
+        self.emit_event('ABS_X', 15000)
+        self.emit_event('ABS_Y', 15000)
         self.emit_event('BTN_TOUCH', 1)
-        self.emit_event('ABS_X', 15)
-        self.emit_event('ABS_Y', 188)
+        self.emit_event('ABS_X', 16000)
+        self.emit_event('ABS_Y', 16000)
         self.emit_event('BTN_TOUCH', 0)
         # should be ignored
         self.emit_event('REL_Y', 1)
         self.emit_event('REL_Y', 1)
 
-        self.assertEvent(['RawTouchBegin', ANY, {'0': '0.00', '1': '0.00'}])
-        self.assertEvent(['RawTouchUpdate', ANY, {'0': '15.00', '1': '0.00'}])
-        self.assertEvent(['RawTouchUpdate', ANY, {'0': '15.00', '1': '188.00'}])
+        self.assertEvent(['RawTouchBegin', ANY,
+            {'0': '15000.00', '1': '15000.00'}])
+        self.assertEvent(['RawTouchUpdate', ANY,
+            {'0': '16000.00', '1': '15000.00'}])
+        self.assertEvent(['RawTouchUpdate', ANY,
+            {'0': '16000.00', '1': '16000.00'}])
         # FIXME: really (0, 0)?
         self.assertEvent(['RawTouchEnd', ANY, {'0': '0.00', '1': '0.00'}])
         self.assertNoEvent(msg="rel events should be ignored")
