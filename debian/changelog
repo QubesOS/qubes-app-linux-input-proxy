@@ -1,3 +1,12 @@
+qubes-input-proxy (1.0.14-1) unstable; urgency=medium
+
+  * debian: don't create orig.tar.gz manually
+  * tests: round coordinates received from X server
+  * tests: drop right and middle buttons from emulated touchscreen
+  * tests: try not to hit the menu on tablet tests
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 10 Mar 2019 01:49:37 +0100
+
 qubes-input-proxy (1.0.13-1) unstable; urgency=medium
 
   * rpm: add BR: gcc
