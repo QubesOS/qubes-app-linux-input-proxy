@@ -1,3 +1,11 @@
+qubes-input-proxy (1.0.15-1) unstable; urgency=medium
+
+  * Convert qubes-input-trigger to python3
+  * travis: update Fedora and Debian versions, switch to xenial
+  * travis: drop R3.2
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 07 Apr 2019 21:52:57 +0200
+
 qubes-input-proxy (1.0.14-1) unstable; urgency=medium
 
   * debian: don't create orig.tar.gz manually
