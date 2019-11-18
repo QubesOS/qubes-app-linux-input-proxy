@@ -1,3 +1,14 @@
+qubes-input-proxy (1.0.16-1) unstable; urgency=medium
+
+  [ Frédéric Pierret (fepitre) ]
+  * travis: switch to bionic
+
+  [ Marek Marczykowski-Górecki ]
+  * Drop python2 packaging
+  * travis: drop jessie, add fc31
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Mon, 18 Nov 2019 05:35:22 +0100
+
 qubes-input-proxy (1.0.15-1) unstable; urgency=medium
 
   * Convert qubes-input-trigger to python3
