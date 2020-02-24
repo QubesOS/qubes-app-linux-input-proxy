@@ -14,9 +14,9 @@ install:
 	install -m 0644 -D qubes-uinput.modules \
 		$(DESTDIR)/lib/modules-load.d/qubes-uinput.conf
 	install -d $(DESTDIR)/etc/qubes-rpc
-	install -m 0644 qubes.InputMouse $(DESTDIR)/etc/qubes-rpc
-	install -m 0644 qubes.InputKeyboard $(DESTDIR)/etc/qubes-rpc
-	install -m 0644 qubes.InputTablet $(DESTDIR)/etc/qubes-rpc
+	install qubes.InputMouse $(DESTDIR)/etc/qubes-rpc
+	install qubes.InputKeyboard $(DESTDIR)/etc/qubes-rpc
+	install qubes.InputTablet $(DESTDIR)/etc/qubes-rpc
 	install -m 0664 -D qubes.InputMouse.policy \
 		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputMouse
 	install -m 0664 -D qubes.InputKeyboard.policy \
