@@ -2,7 +2,7 @@ Name:		qubes-input-proxy
 Version:	@VERSION@
 Release:	1%{?dist}
 Obsoletes:	input-proxy
-Summary:	Simple input device proxy (receiver)
+Summary:	Simple input device proxy (dom0)
 
 Group:		System Environment/Daemons
 License:	GPLv2
@@ -12,6 +12,8 @@ BuildRequires:	gcc
 BuildRequires:	kernel-headers
 BuildRequires:	python%{python3_pkgversion}-setuptools
 BuildRequires:	python%{python3_pkgversion}-devel
+
+Requires: %{name}-receiver
 
 Source0: %{name}-%{version}.tar.gz
 
@@ -30,6 +32,16 @@ Simple input device proxy, which pass events from /dev/input/eventN device, to
 /dev/uintput. It uses stdin/stdout, so it suitable for use as Qubes RPC service.
 This package is sender part.
 
+%package receiver
+Summary:    Simple input device proxy (receiver)
+%{?systemd_requires}
+BuildRequires:  systemd
+
+%description receiver
+Simple input device proxy, which pass events from /dev/input/eventN device, to
+/dev/uintput. It uses stdin/stdout, so it suitable for use as Qubes RPC service.
+This package is sender part.
+
 %prep
 %setup -q
 
@@ -43,12 +55,6 @@ make install DESTDIR=%{buildroot}
 %files
 %doc README.md
 %defattr(-,root,root,-)
-/usr/bin/input-proxy-receiver
-/etc/qubes-rpc/qubes.InputMouse
-/etc/qubes-rpc/qubes.InputKeyboard
-/etc/qubes-rpc/qubes.InputTablet
-/lib/udev/rules.d/90-qubes-uinput.rules
-/lib/modules-load.d/qubes-uinput.conf
 %{python3_sitelib}/qubesinputproxy-*.egg-info/*
 %{python3_sitelib}/qubesinputproxy
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputMouse
@@ -67,6 +73,16 @@ make install DESTDIR=%{buildroot}
 %{_unitdir}/qubes-input-sender-mouse@.service
 %{_unitdir}/qubes-input-sender-keyboard@.service
 %{_unitdir}/qubes-input-sender-keyboard-mouse@.service
+
+%files receiver
+%doc README.md
+%defattr(-,root,root,-)
+/usr/bin/input-proxy-receiver
+/etc/qubes-rpc/qubes.InputMouse
+/etc/qubes-rpc/qubes.InputKeyboard
+/etc/qubes-rpc/qubes.InputTablet
+/lib/udev/rules.d/90-qubes-uinput.rules
+/lib/modules-load.d/qubes-uinput.conf
 
 %changelog
 @CHANGELOG@
