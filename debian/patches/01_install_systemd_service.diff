@@ -1,7 +1,9 @@
 --- a/qubes-rpc/Makefile
 +++ b/qubes-rpc/Makefile
-@@ -1,11 +1,11 @@
- install:
+@@ -9,13 +9,13 @@
+ 		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputTablet
+ 
+ install-vm:
 -	install -d $(DESTDIR)/usr/lib/systemd/system
 +	install -d $(DESTDIR)/lib/systemd/system
  	install -m 0644 \

@@ -1,4 +1,14 @@
-install:
+install: install-vm install-dom0
+
+install-dom0:
+	install -m 0664 -D qubes.InputMouse.policy \
+		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputMouse
+	install -m 0664 -D qubes.InputKeyboard.policy \
+		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputKeyboard
+	install -m 0664 -D qubes.InputTablet.policy \
+		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputTablet
+
+install-vm:
 	install -d $(DESTDIR)/usr/lib/systemd/system
 	install -m 0644 \
 		qubes-input-sender-keyboard@.service \
@@ -17,12 +27,6 @@ install:
 	install qubes.InputMouse $(DESTDIR)/etc/qubes-rpc
 	install qubes.InputKeyboard $(DESTDIR)/etc/qubes-rpc
 	install qubes.InputTablet $(DESTDIR)/etc/qubes-rpc
-	install -m 0664 -D qubes.InputMouse.policy \
-		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputMouse
-	install -m 0664 -D qubes.InputKeyboard.policy \
-		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputKeyboard
-	install -m 0664 -D qubes.InputTablet.policy \
-		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputTablet
 	install -m 0755 -D qubes-input-trigger \
 		$(DESTDIR)/usr/bin/qubes-input-trigger
 	install -m 0644 -D qubes-input-trigger.desktop \

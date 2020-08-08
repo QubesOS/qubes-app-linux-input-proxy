@@ -3,4 +3,4 @@
 /etc/qubes-rpc/qubes.InputKeyboard
 /etc/qubes-rpc/qubes.InputTablet
 /lib/udev/rules.d/90-qubes-uinput.rules
-
+/lib/modules-load.d/qubes-uinput.conf

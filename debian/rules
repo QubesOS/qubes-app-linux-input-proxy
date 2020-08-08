@@ -27,6 +27,10 @@ include /usr/share/dpkg/default.mk
 #	dh_auto_configure -- \
 #	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
 
+override_dh_auto_install:
+	make install-vm DESTDIR=$(PWD)/debian/tmp
 
+override_dh_missing:
+	dh_missing --fail-missing
 
 
