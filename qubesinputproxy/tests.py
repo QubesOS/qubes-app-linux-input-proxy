@@ -447,7 +447,8 @@ class TC_00_InputProxy(ExtraTestCase):
             self.loop.run_until_complete(p.communicate())
         except (FileNotFoundError, AttributeError):
             # R3.2
-            self.vm.run("true", gui=True, wait=True)
+            pass
+        self.vm.run("true", gui=True, wait=True)
         self.find_device_and_start_listener()
         self.emit_event('REL_X', 1)
         self.emit_event('REL_X', 1)
