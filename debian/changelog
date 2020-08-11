@@ -1,3 +1,15 @@
+qubes-input-proxy (1.0.19-1) unstable; urgency=medium
+
+  [ Marek Marczykowski-Górecki ]
+  * tests: wait for user session on R4.0+ too
+  * rpm: split receiver part into a separate package
+  * debian: add /lib/modules-load.d/qubes-uinput.conf, update packaging
+
+  [ Frédéric Pierret (fepitre) ]
+  * Update travis
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 11 Aug 2020 19:25:46 +0200
+
 qubes-input-proxy (1.0.18-1) unstable; urgency=medium
 
   * tests: fix delayed GUI start
