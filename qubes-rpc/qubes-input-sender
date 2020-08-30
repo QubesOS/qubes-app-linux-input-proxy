@@ -1,0 +1,16 @@
+#!/bin/bash
+
+SERVICE_RPC="$1"
+EVENT_FILE="$2"
+TARGET_DOMAIN="${3:-dom0}"
+
+if [ -n "$SERVICE_RPC" ] && [ -n "$EVENT_FILE" ]; then
+    if [ "$(qubesdb-read /qubes-vm-type)" == AppVM ]; then
+        /usr/bin/qrexec-client-vm "$TARGET_DOMAIN" "$SERVICE_RPC" /usr/bin/input-proxy-sender "$EVENT_FILE"
+    else
+        /usr/bin/qrexec-client -d "$TARGET_DOMAIN" -l "/usr/bin/input-proxy-sender $EVENT_FILE" "DEFAULT:QUBESRPC $SERVICE_RPC dom0"
+    fi
+else
+    echo "Please provide at least SERVICE_RPC and EVENT_FILE!"
+    exit 1
+fi

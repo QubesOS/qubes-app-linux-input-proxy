@@ -16,11 +16,12 @@ for input_dev in eventFiles:
             udevreturn = subprocess.check_output([
                 "udevadm", "info", "--query=property", "--name=" + eventFile]).decode()
             if 'ID_BUS=i8042' in udevreturn:
+                service = None
                 if ('ID_INPUT_TABLET' or 'ID_INPUT_TOUCHSCREEN') in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
                     service = 'qubes-input-sender-tablet'
                 elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
                     service = 'qubes-input-sender-mouse'
-                elif 'ID_INPUT_KEYBOARD' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
+                elif 'ID_INPUT_KEY' in udevreturn and 'ID_INPUT_MOUSE' not in udevreturn:
                     service = 'qubes-input-sender-keyboard'
                 elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' in udevreturn:
                     service = 'qubes-input-sender-keyboard-mouse'

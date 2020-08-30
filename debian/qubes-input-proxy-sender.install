@@ -1,5 +1,7 @@
 /usr/bin/input-proxy-sender
+/usr/bin/qubes-input-sender
 /usr/bin/qubes-input-trigger
+/usr/bin/qubes-input-trigger-ps2
 /etc/xdg/autostart/qubes-input-trigger.desktop
 /etc/sudoers.d/qubes-input-trigger
 /lib/udev/rules.d/90-qubes-input-proxy.rules

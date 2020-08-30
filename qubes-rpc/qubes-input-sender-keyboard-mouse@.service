@@ -4,4 +4,6 @@ After=qubes-qrexec-agent.service
 OnFailure=qubes-input-sender-mouse@%i.service
 
 [Service]
-ExecStart=/usr/bin/qrexec-client-vm dom0 qubes.InputKeyboard /usr/bin/input-proxy-sender /dev/input/%i
+Environment=TARGET_DOMAIN=dom0
+EnvironmentFile=-/etc/qubes/input-proxy-target
+ExecStart=/usr/bin/qubes-input-sender qubes.InputKeyboard /dev/input/%i "$TARGET_DOMAIN"

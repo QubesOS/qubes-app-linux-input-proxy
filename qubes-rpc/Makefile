@@ -29,6 +29,10 @@ install-vm:
 	install qubes.InputTablet $(DESTDIR)/etc/qubes-rpc
 	install -m 0755 -D qubes-input-trigger \
 		$(DESTDIR)/usr/bin/qubes-input-trigger
+	install -m 0755 -D qubes-input-trigger-ps2 \
+		$(DESTDIR)/usr/bin/qubes-input-trigger-ps2
+	install -m 0755 -D qubes-input-sender \
+		$(DESTDIR)/usr/bin/qubes-input-sender
 	install -m 0644 -D qubes-input-trigger.desktop \
 		$(DESTDIR)/etc/xdg/autostart/qubes-input-trigger.desktop
 	install -m 0600 -D qubes-input-trigger.sudoers \

@@ -3,4 +3,6 @@ Description=Qubes input proxy sender (tablet/touchscreen)
 After=qubes-qrexec-agent.service
 
 [Service]
-ExecStart=/usr/bin/qrexec-client-vm dom0 qubes.InputTablet /usr/bin/input-proxy-sender /dev/input/%i
+Environment=TARGET_DOMAIN=dom0
+EnvironmentFile=-/etc/qubes/input-proxy-target
+ExecStart=/usr/bin/qubes-input-sender qubes.InputTablet /dev/input/%i "$TARGET_DOMAIN"
