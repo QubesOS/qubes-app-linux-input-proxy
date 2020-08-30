@@ -1,0 +1,32 @@
+#!/usr/bin/python3
+#
+# Trigger start qubes-input-* services for dom0 ps2 input mouse/keyboard devices.
+# Used at GuiVM startup with real GPU passthrough (sys-gui-gpu)
+
+import subprocess
+import os
+import sys
+from stat import *
+
+eventFiles = os.listdir("/dev/input")
+for input_dev in eventFiles:
+    if 'event' in input_dev:  # if filename contains 'event'
+        eventFile = os.path.join("/dev/input", input_dev)
+        if S_ISCHR(os.stat(eventFile).st_mode) != 0:  # is character device?
+            udevreturn = subprocess.check_output([
+                "udevadm", "info", "--query=property", "--name=" + eventFile]).decode()
+            if 'ID_BUS=i8042' in udevreturn:
+                if ('ID_INPUT_TABLET' or 'ID_INPUT_TOUCHSCREEN') in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
+                    service = 'qubes-input-sender-tablet'
+                elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
+                    service = 'qubes-input-sender-mouse'
+                elif 'ID_INPUT_KEYBOARD' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
+                    service = 'qubes-input-sender-keyboard'
+                elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' in udevreturn:
+                    service = 'qubes-input-sender-keyboard-mouse'
+            
+                if service:
+                    service = '{}@{}.service'.format(service, input_dev)
+                    subprocess.call([
+                        "sudo", "/bin/systemctl", "--no-block",
+                        "start", service])

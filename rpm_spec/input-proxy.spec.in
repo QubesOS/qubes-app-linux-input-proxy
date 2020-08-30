@@ -67,6 +67,7 @@ make install DESTDIR=%{buildroot}
 /etc/sudoers.d/qubes-input-trigger
 /usr/bin/input-proxy-sender
 /usr/bin/qubes-input-trigger
+/usr/bin/qubes-input-trigger-ps2
 %config(noreplace) /etc/xdg/autostart/qubes-input-trigger.desktop
 /lib/udev/rules.d/90-qubes-input-proxy.rules
 %{_unitdir}/qubes-input-sender-tablet@.service
