@@ -15,9 +15,11 @@ for input_dev in eventFiles:
         if S_ISCHR(os.stat(eventFile).st_mode) != 0:  # is character device?
             udevreturn = subprocess.check_output([
                 "udevadm", "info", "--query=property", "--name=" + eventFile]).decode()
-            if 'ID_BUS=i8042' in udevreturn:
+            if '/devices/virtual/' not in udevreturn:
                 service = None
-                if ('ID_INPUT_TABLET' or 'ID_INPUT_TOUCHSCREEN') in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
+                if (('ID_INPUT_TABLET' in udevreturn) or (
+                        'ID_INPUT_TOUCHSCREEN' in udevreturn) or (
+                            'ID_INPUT_TOUCHPAD' in udevreturn)) and 'ID_INPUT_KEY' not in udevreturn:
                     service = 'qubes-input-sender-tablet'
                 elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
                     service = 'qubes-input-sender-mouse'
@@ -25,7 +27,7 @@ for input_dev in eventFiles:
                     service = 'qubes-input-sender-keyboard'
                 elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' in udevreturn:
                     service = 'qubes-input-sender-keyboard-mouse'
-            
+
                 if service:
                     service = '{}@{}.service'.format(service, input_dev)
                     subprocess.call([
