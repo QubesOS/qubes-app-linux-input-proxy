@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 #
-# Trigger "add" udev even for all input mouse/keyboard devices.
-# Used to retry qrexec confirmation dialogs after user login
+# Trigger start qubes-input-* services for input mouse/key devices.
+# Used at dom0/GuiVM startup with real GPU passthrough (sys-gui-gpu)
+
 
 import subprocess
 import os
@@ -15,10 +16,21 @@ for input_dev in eventFiles:
         if S_ISCHR(os.stat(eventFile).st_mode) != 0:  # is character device?
             udevreturn = subprocess.check_output([
                 "udevadm", "info", "--query=property", "--name=" + eventFile]).decode()
-            if 'ID_INPUT_MOUSE' in udevreturn or \
-                    'ID_INPUT_KEYBOARD' in udevreturn or \
-                    'ID_INPUT_TABLET' in udevreturn or \
-                    'ID_INPUT_TOUCHSCREEN' in udevreturn:
-                subprocess.call([
-                    "sudo", "/bin/udevadm", "trigger",
-                    "--action=add", "--sysname-match=" + input_dev])
+            if '/devices/virtual/' not in udevreturn:
+                service = None
+                if (('ID_INPUT_TABLET' in udevreturn) or (
+                        'ID_INPUT_TOUCHSCREEN' in udevreturn) or (
+                            'ID_INPUT_TOUCHPAD' in udevreturn)) and 'ID_INPUT_KEY' not in udevreturn:
+                    service = 'qubes-input-sender-tablet'
+                elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
+                    service = 'qubes-input-sender-mouse'
+                elif 'ID_INPUT_KEY' in udevreturn and 'ID_INPUT_MOUSE' not in udevreturn:
+                    service = 'qubes-input-sender-keyboard'
+                elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' in udevreturn:
+                    service = 'qubes-input-sender-keyboard-mouse'
+
+                if service:
+                    service = '{}@{}.service'.format(service, input_dev)
+                    subprocess.call([
+                        "sudo", "/bin/systemctl", "--no-block",
+                        "start", service])
