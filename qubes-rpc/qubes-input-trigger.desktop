@@ -2,4 +2,4 @@
 Version=1.0
 Type=Application
 Name=Retry Qubes RPC prompts for input devices
-Exec=/usr/bin/qubes-input-trigger
+Exec=/usr/bin/qubes-input-trigger --all

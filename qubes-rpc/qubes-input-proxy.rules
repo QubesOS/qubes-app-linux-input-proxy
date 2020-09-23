@@ -5,17 +5,7 @@ ENV{ID_BUS}=="i8042", GOTO="qubes_input_proxy_end"
 ENV{ID_PATH}=="acpi-*", GOTO="qubes_input_proxy_end"
 ENV{ID_PATH}=="platform-*", GOTO="qubes_input_proxy_end"
 
-KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_TABLET}=="1", ENV{ID_INPUT_KEY}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-tablet@%k.service"
-KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_TOUCHSCREEN}=="1", ENV{ID_INPUT_KEY}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-tablet@%k.service"
-KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop qubes-input-sender-tablet@%k.service"
-
-KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_MOUSE}=="1", ENV{ID_INPUT_KEY}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-mouse@%k.service"
-KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop qubes-input-sender-mouse@%k.service"
-
-KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_KEY}=="1", ENV{ID_INPUT_MOUSE}!="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-keyboard@%k.service"
-KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop qubes-input-sender-keyboard@%k.service"
-
-KERNEL=="event*", ACTION=="add", ENV{ID_INPUT_KEY}=="1", ENV{ID_INPUT_MOUSE}=="1", RUN+="/bin/systemctl --no-block start qubes-input-sender-keyboard-mouse@%k.service"
-KERNEL=="event*", ACTION=="remove", RUN+="/bin/systemctl --no-block stop qubes-input-sender-keyboard-mouse@%k.service"
+KERNEL=="event*", ACTION=="add", RUN+="/usr/bin/qubes-input-trigger --event %k --action add"
+KERNEL=="event*", ACTION=="remove", RUN+="/usr/bin/qubes-input-trigger --event %k --action remove"
 
 LABEL="qubes_input_proxy_end"
