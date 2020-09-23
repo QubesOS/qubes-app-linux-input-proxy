@@ -16,21 +16,25 @@ for input_dev in eventFiles:
         if S_ISCHR(os.stat(eventFile).st_mode) != 0:  # is character device?
             udevreturn = subprocess.check_output([
                 "udevadm", "info", "--query=property", "--name=" + eventFile]).decode()
-            if '/devices/virtual/' not in udevreturn:
-                service = None
-                if (('ID_INPUT_TABLET' in udevreturn) or (
-                        'ID_INPUT_TOUCHSCREEN' in udevreturn) or (
-                            'ID_INPUT_TOUCHPAD' in udevreturn)) and 'ID_INPUT_KEY' not in udevreturn:
-                    service = 'qubes-input-sender-tablet'
-                elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
-                    service = 'qubes-input-sender-mouse'
-                elif 'ID_INPUT_KEY' in udevreturn and 'ID_INPUT_MOUSE' not in udevreturn:
-                    service = 'qubes-input-sender-keyboard'
-                elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' in udevreturn:
-                    service = 'qubes-input-sender-keyboard-mouse'
+            # The ID_SERIAL_SHORT here corresponds to qemu-emulated tablet
+            # device for HVM which is static. It allows to attach another tablet
+            # for example when using KVM for tests
+            if '/devices/virtual/' or 'ID_SERIAL_SHORT=28754-0000:00:05.0-1' in udevreturn:
+                continue
+            service = None
+            if (('ID_INPUT_TABLET' in udevreturn) or (
+                    'ID_INPUT_TOUCHSCREEN' in udevreturn) or (
+                        'ID_INPUT_TOUCHPAD' in udevreturn)) and 'ID_INPUT_KEY' not in udevreturn:
+                service = 'qubes-input-sender-tablet'
+            elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
+                service = 'qubes-input-sender-mouse'
+            elif 'ID_INPUT_KEY' in udevreturn and 'ID_INPUT_MOUSE' not in udevreturn:
+                service = 'qubes-input-sender-keyboard'
+            elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' in udevreturn:
+                service = 'qubes-input-sender-keyboard-mouse'
 
-                if service:
-                    service = '{}@{}.service'.format(service, input_dev)
-                    subprocess.call([
-                        "sudo", "/bin/systemctl", "--no-block",
-                        "start", service])
+            if service:
+                service = '{}@{}.service'.format(service, input_dev)
+                subprocess.call([
+                    "sudo", "/bin/systemctl", "--no-block",
+                    "start", service])
