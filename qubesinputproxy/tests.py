@@ -78,6 +78,7 @@ class TC_00_InputProxy(ExtraTestCase):
             # for possible uinput library installation
             self.enable_network()
             self.vm = self.create_vms(["input"])[0]
+            self.vm.features['service.input-trigger-virtual'] = 1
             self.vm.start(start_guid=False)
             if self.vm.run("python3 -c 'import uinput'", wait=True, gui=False) != 0:
                 # If uinput module not installed, try to install it with pip

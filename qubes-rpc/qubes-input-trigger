@@ -26,7 +26,7 @@ def get_args():
         required=False
     )
     parser.add_argument(
-        "--nofilter",
+        "--dom0",
         required=False,
         action="store_true"
     )
@@ -73,7 +73,7 @@ def handle_service(service, action):
         ["sudo", "/bin/systemctl", "--no-block", systemctl_action, service])
 
 
-def handle_event(input_dev, action, nofilter):
+def handle_event(input_dev, action, dom0):
     udevreturn = None
     if 'event' in input_dev:  # if filename contains 'event'
         if action == "add":
@@ -86,16 +86,22 @@ def handle_event(input_dev, action, nofilter):
                     "udevadm", "info", "--query=property",
                     "--name=" + eventFile]).decode()
                 # The ID_SERIAL_SHORT here corresponds to qemu-emulated tablet
-                # device for HVM which is static. It allows to attach another tablet
-                # for example when using KVM for tests
-                if '/devices/virtual/' in udevreturn or \
-                        'ID_SERIAL_SHORT=28754-0000:00:05.0-1' in udevreturn or \
+                # device for HVM which is static. It allows to attach another
+                # tablet for example when using KVM for tests
+                if 'ID_SERIAL_SHORT=28754-0000:00:05.0-1' in udevreturn or \
                         'ID_TYPE=video' in udevreturn:
                     return
-                if not nofilter:
-                    if 'ID_PATH=acpi-' in udevreturn or \
-                            'ID_PATH=platform-' in udevreturn:
-                        return
+                if '/devices/virtual/' in udevreturn and dom0:
+                    return
+                # We exclude in sys-usb ID_PATH=acpi-* and ID_PATH=platform-*
+                # which can correspond to power-switch buttons. By default, HVM
+                # exposes some so there is no point for adding input devices
+                # into dom0 from those. This is only pertinent in the case
+                # of dom0 key devices to sys-gui-gpu
+                if 'ID_PATH=acpi-' in udevreturn and not dom0:
+                    return
+                if 'ID_PATH=platform-' in udevreturn and not dom0:
+                    return
         elif action == "remove":
             # on remove action we use information passed through
             # env by udev
@@ -109,10 +115,10 @@ def handle_event(input_dev, action, nofilter):
             handle_service(service, action)
 
 
-def handle_all_events(nofilter):
+def handle_all_events(dom0):
     eventFiles = os.listdir("/dev/input")
     for input_dev in eventFiles:
-        handle_event(input_dev, "add", nofilter)
+        handle_event(input_dev, "add", dom0)
 
 
 def main():
@@ -126,9 +132,9 @@ def main():
         print("Please provide action to perform: add/remove")
 
     if args.all:
-        handle_all_events(args.nofilter)
+        handle_all_events(args.dom0)
     else:
-        handle_event(args.event, args.action, args.nofilter)
+        handle_event(args.event, args.action, args.dom0)
 
 
 if __name__ == '__main__':
