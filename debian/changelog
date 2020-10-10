@@ -1,3 +1,17 @@
+qubes-input-proxy (1.0.20-1) unstable; urgency=medium
+
+  [ Frédéric Pierret (fepitre) ]
+  * Add script for trigger sending dom0 ps2 devices
+  * qubes-input-sender-*: add third party script to handle dom0 and VM
+  * Send every non qubes devices from dom0 to sys-gui-gpu
+  * Simplify method for dom0/VM input trigger
+  * Filter out QEMU tablet provided by HVM
+  * Refactor qubes-input-trigger to be used by udev rules
+  * Use --dom0 switch to allow or not virtual, acpi or platform devices
+  * tests: remove leftover previous attempts
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sat, 10 Oct 2020 04:21:14 +0200
+
 qubes-input-proxy (1.0.19-1) unstable; urgency=medium
 
   [ Marek Marczykowski-Górecki ]
