@@ -55,6 +55,7 @@ make install DESTDIR=%{buildroot}
 %files
 %doc README.md
 %defattr(-,root,root,-)
+%dir %{python3_sitelib}/qubesinputproxy-*.egg-info
 %{python3_sitelib}/qubesinputproxy-*.egg-info/*
 %{python3_sitelib}/qubesinputproxy
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputMouse
