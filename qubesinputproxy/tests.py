@@ -503,8 +503,48 @@ class TC_00_InputProxy(ExtraTestCase):
         self.assertEvent(['RawTouchEnd', ANY, {'0': '0.00', '1': '0.00'}])
         self.assertNoEvent(msg="rel events should be ignored")
 
+class TC_01_InputProxyExclude(ExtraTestCase):
+    template = None
+    def setUp(self):
+        super(TC_01_InputProxyExclude, self).setUp()
+        if self.template is None:
+            self.skipTest('skip outside real qubes')
+        if self.template.startswith('whonix-'):
+            self.skipTest('No input proxy on whonix')
+
+    def find_device(self):
+        try_count = 20
+        for try_no in range(try_count):
+            try:
+                xinput_list = subprocess.check_output(
+                    ['xinput', 'list', '--name-only'],
+                    stderr=subprocess.DEVNULL
+                )
+                for line in xinput_list.decode().splitlines():
+                    if line.startswith(self.vm.name + ':'):
+                        return line
+            except subprocess.CalledProcessError:
+                pass
+            self.loop.run_until_complete(asyncio.sleep(0.2))
+
+        return None
+
+    def test_000_qemu_tablet(self):
+        self.vm = self.create_vms(["input"])[0]
+        self.vm.virt_mode = 'hvm'
+        self.qrexec_policy('qubes.InputMouse', self.vm.name, 'dom0')
+        self.qrexec_policy('qubes.InputTablet', self.vm.name, 'dom0')
+        self.vm.start(start_guid=False)
+        p = self.loop.run_until_complete(
+            asyncio.create_subprocess_exec('qvm-start-gui', self.vm.name))
+        self.loop.run_until_complete(p.communicate())
+        device = self.find_device()
+        self.assertIsNone(device,
+            "QEMU device not filtered out: {!r}".format(device))
+
 
 def list_tests():
     return (
         TC_00_InputProxy,
+        TC_01_InputProxyExclude,
     )
