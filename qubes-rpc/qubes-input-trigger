@@ -35,9 +35,12 @@ def get_args():
 
 def get_service_name(udevreturn, input_dev):
     service = None
-    if (('ID_INPUT_TABLET' in udevreturn) or (
-            'ID_INPUT_TOUCHSCREEN' in udevreturn) or (
-                'ID_INPUT_TOUCHPAD' in udevreturn)) and 'ID_INPUT_KEY' not in udevreturn:
+    if (
+            ('ID_INPUT_TABLET' in udevreturn) or
+            ('ID_INPUT_TOUCHSCREEN' in udevreturn) or
+            ('ID_INPUT_TOUCHPAD' in udevreturn) or
+            ('QEMU_USB_Tablet' in udevreturn)
+    ) and 'ID_INPUT_KEY' not in udevreturn:
         service = 'qubes-input-sender-tablet'
     elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
         service = 'qubes-input-sender-mouse'
@@ -90,6 +93,13 @@ def handle_event(input_dev, action, dom0):
                 # tablet for example when using KVM for tests
                 if 'ID_SERIAL_SHORT=28754-0000:00:05.0-1' in udevreturn or \
                         'ID_TYPE=video' in udevreturn:
+                    return
+                # In 4.0 HVM is not exposing above characteristics and there is
+                # no particular differences between HVM qemu-emulated tablet and
+                # the one provided by KVM when hosting Qubes into (e.g. openQA).
+                # We filter on pci bus and serial info
+                if 'ID_PATH=pci-0000:00:04.0-usb-0:1:1.0' in udevreturn and \
+                        'ID_SERIAL=QEMU_QEMU_USB_Tablet_42' in udevreturn:
                     return
                 if '/devices/virtual/' in udevreturn and dom0:
                     return
