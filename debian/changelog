@@ -1,3 +1,14 @@
+qubes-input-proxy (1.0.21-1) unstable; urgency=medium
+
+  [ Marek Marczykowski-Górecki ]
+  * Add test for QEMU tablet filtering
+  * rpm: claim ownership over python package dir itself
+
+  [ Frédéric Pierret (fepitre) ]
+  * Fix filtering of QEMU tablet from sys-usb to dom0
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 01 Nov 2020 00:38:41 +0100
+
 qubes-input-proxy (1.0.20-1) unstable; urgency=medium
 
   [ Frédéric Pierret (fepitre) ]
