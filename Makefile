@@ -1,3 +1,4 @@
+PYTHON ?= python3
 
 all:
 	$(MAKE) -C src all
@@ -10,7 +11,7 @@ install-vm:
 
 install-dom0:
 	$(MAKE) -C qubes-rpc install-dom0
-	python3 setup.py install -O1 --root $(DESTDIR)
+	$(PYTHON) setup.py install -O1 --root $(DESTDIR)
 
 clean:
 	$(MAKE) -C src clean
