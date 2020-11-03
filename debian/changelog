@@ -1,3 +1,10 @@
+qubes-input-proxy (1.0.22-1) unstable; urgency=medium
+
+  * Second attempt at filtering QEMU USB tablet
+  * Use rpm-dictated python3 version
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 03 Nov 2020 04:52:19 +0100
+
 qubes-input-proxy (1.0.21-1) unstable; urgency=medium
 
   [ Marek Marczykowski-Górecki ]
