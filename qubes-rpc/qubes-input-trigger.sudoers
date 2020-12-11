@@ -2,4 +2,7 @@
 # This is especially needed when qrexec policy is set to "ask", because it can
 # be allowed only when there is a way to ask the user.
 
-user ALL=(root) NOPASSWD:/bin/udevadm trigger --action=add --sysname-match=event[0-9]
+user ALL=(root) NOPASSWD:/bin/systemctl --no-block start qubes-input-sender-keyboard@event[0-9].service
+user ALL=(root) NOPASSWD:/bin/systemctl --no-block start qubes-input-sender-mouse@event[0-9].service
+user ALL=(root) NOPASSWD:/bin/systemctl --no-block start qubes-input-sender-tablet@event[0-9].service
+user ALL=(root) NOPASSWD:/bin/systemctl --no-block start qubes-input-sender-keyboard-mouse@event[0-9].service
