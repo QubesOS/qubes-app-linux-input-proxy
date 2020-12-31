@@ -72,8 +72,12 @@ def handle_service(service, action):
         print("Unknown action: %s" % action)
         sys.exit(1)
 
+    sudo = []
+    if os.getuid() != 0:
+        sudo = ["sudo"]
+
     subprocess.call(
-        ["sudo", "/bin/systemctl", "--no-block", systemctl_action, service])
+        sudo + ["/bin/systemctl", "--no-block", systemctl_action, service])
 
 
 def handle_event(input_dev, action, dom0):
