@@ -1,3 +1,14 @@
+qubes-input-proxy (1.0.23-1) unstable; urgency=medium
+
+  [ Frédéric Pierret (fepitre) ]
+  * Add .gitlab-ci.yml
+
+  [ Marek Marczykowski-Górecki ]
+  * Update sudo rules for new startup trigger mechanism
+  * Don't use sudo when already running as root
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 03 Jan 2021 06:35:41 +0100
+
 qubes-input-proxy (1.0.22-1) unstable; urgency=medium
 
   * Second attempt at filtering QEMU USB tablet
