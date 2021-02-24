@@ -28,7 +28,8 @@ def get_args():
     parser.add_argument(
         "--dom0",
         required=False,
-        action="store_true"
+        action="store_true",
+        default=os.path.exists('/etc/qubes-release'),
     )
     return parser.parse_args()
 
