@@ -8,6 +8,7 @@ Group:		System Environment/Daemons
 License:	GPLv2
 URL:		https://www.qubes-os.org/
 
+BuildRequires:  make
 BuildRequires:	gcc
 BuildRequires:	kernel-headers
 BuildRequires:	python%{python3_pkgversion}-setuptools
