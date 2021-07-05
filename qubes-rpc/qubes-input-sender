@@ -8,6 +8,10 @@ if [ -n "$SERVICE_RPC" ] && [ -n "$EVENT_FILE" ]; then
     if [ -e /usr/bin/qrexec-client-vm ]; then
         /usr/bin/qrexec-client-vm "$TARGET_DOMAIN" "$SERVICE_RPC" /usr/bin/input-proxy-sender "$EVENT_FILE"
     else
+        if [ "$TARGET_DOMAIN" = "dom0" ]; then
+            echo "Device $EVENT_FILE is already in dom0"
+            exit 0
+        fi
         /usr/bin/qrexec-client -d "$TARGET_DOMAIN" -l "/usr/bin/input-proxy-sender $EVENT_FILE" "DEFAULT:QUBESRPC $SERVICE_RPC dom0"
     fi
 else
