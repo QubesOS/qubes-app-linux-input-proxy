@@ -1,3 +1,14 @@
+qubes-input-proxy (1.0.24-1) unstable; urgency=medium
+
+  [ Frédéric Pierret (fepitre) ]
+  * spec: add BR make
+
+  [ Marek Marczykowski-Górecki ]
+  * Automatically detect dom0
+  * Avoid forwarding dom0 devices back to dom0
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Fri, 09 Jul 2021 06:06:20 +0200
+
 qubes-input-proxy (1.0.23-1) unstable; urgency=medium
 
   [ Frédéric Pierret (fepitre) ]
