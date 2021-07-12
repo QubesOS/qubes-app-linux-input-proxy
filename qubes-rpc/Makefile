@@ -1,5 +1,8 @@
 install: install-vm install-dom0
 
+LIBDIR ?= /lib
+USRLIBDIR ?= /usr/lib
+
 install-dom0:
 	install -m 0664 -D qubes.InputMouse.policy \
 		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputMouse
@@ -9,20 +12,20 @@ install-dom0:
 		$(DESTDIR)/etc/qubes-rpc/policy/qubes.InputTablet
 
 install-vm:
-	install -d $(DESTDIR)/usr/lib/systemd/system
+	install -d $(DESTDIR)$(USRLIBDIR)/systemd/system
 	install -m 0644 \
 		qubes-input-sender-keyboard@.service \
 		qubes-input-sender-keyboard-mouse@.service \
 		qubes-input-sender-mouse@.service \
 		qubes-input-sender-tablet@.service \
-		$(DESTDIR)/usr/lib/systemd/system
-	install -d $(DESTDIR)/lib/udev/rules.d
+		$(DESTDIR)$(USRLIBDIR)/systemd/system
+	install -d $(DESTDIR)$(LIBDIR)/udev/rules.d
 	install -m 0644 qubes-input-proxy.rules \
-		$(DESTDIR)/lib/udev/rules.d/90-qubes-input-proxy.rules
+		$(DESTDIR)$(LIBDIR)/udev/rules.d/90-qubes-input-proxy.rules
 	install -m 0644 qubes-uinput.rules \
-		$(DESTDIR)/lib/udev/rules.d/90-qubes-uinput.rules
+		$(DESTDIR)$(LIBDIR)/udev/rules.d/90-qubes-uinput.rules
 	install -m 0644 -D qubes-uinput.modules \
-		$(DESTDIR)/lib/modules-load.d/qubes-uinput.conf
+		$(DESTDIR)$(LIBDIR)/modules-load.d/qubes-uinput.conf
 	install -d $(DESTDIR)/etc/qubes-rpc
 	install qubes.InputMouse $(DESTDIR)/etc/qubes-rpc
 	install qubes.InputKeyboard $(DESTDIR)/etc/qubes-rpc
