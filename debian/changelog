@@ -1,3 +1,10 @@
+qubes-input-proxy (1.0.25-1) unstable; urgency=medium
+
+  [ Nedyalko Andreev ]
+  * Add support for building Archlinux packages
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 26 Oct 2021 03:31:06 +0200
+
 qubes-input-proxy (1.0.24-1) unstable; urgency=medium
 
   [ Frédéric Pierret (fepitre) ]
