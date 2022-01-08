@@ -1,3 +1,10 @@
+qubes-input-proxy (1.0.26-1) unstable; urgency=medium
+
+  [ Frédéric Pierret (fepitre) ]
+  * debian: use USRLIBDIR instead of patch
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sat, 08 Jan 2022 05:52:47 +0100
+
 qubes-input-proxy (1.0.25-1) unstable; urgency=medium
 
   [ Nedyalko Andreev ]
