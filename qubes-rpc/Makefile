@@ -36,5 +36,6 @@ install-vm:
 		$(DESTDIR)/usr/bin/qubes-input-sender
 	install -m 0644 -D qubes-input-trigger.desktop \
 		$(DESTDIR)/etc/xdg/autostart/qubes-input-trigger.desktop
-	install -m 0600 -D qubes-input-trigger.sudoers \
+	mkdir -p -m 0750 $(DESTDIR)/etc/sudoers.d
+	install -m 0600 qubes-input-trigger.sudoers \
 		$(DESTDIR)/etc/sudoers.d/qubes-input-trigger
