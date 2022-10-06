@@ -1,10 +1,10 @@
 host:
   rpm:
-    spec:
+    build:
     - rpm_spec/input-proxy.spec
 vm:
   rpm:
-    spec:
+    build:
     - rpm_spec/input-proxy.spec
   deb:
     build:
