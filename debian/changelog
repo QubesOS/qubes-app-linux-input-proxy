@@ -1,3 +1,9 @@
+qubes-input-proxy (1.0.28-1) unstable; urgency=medium
+
+  * builderv2: Rename 'spec' to 'build'
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Thu, 06 Oct 2022 18:32:43 +0200
+
 qubes-input-proxy (1.0.27-1) unstable; urgency=medium
 
   [ Frédéric Pierret (fepitre) ]
