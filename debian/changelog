@@ -1,3 +1,15 @@
+qubes-input-proxy (1.0.27-1) unstable; urgency=medium
+
+  [ Frédéric Pierret (fepitre) ]
+  * Drop Travis CI
+  * Add Qubes Builder v2 integration
+
+  [ Locria Cyber ]
+  * Fix sudoers.d permission to 600; add build documentation for arch
+    linux
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Thu, 06 Oct 2022 18:21:04 +0200
+
 qubes-input-proxy (1.0.26-1) unstable; urgency=medium
 
   [ Frédéric Pierret (fepitre) ]
