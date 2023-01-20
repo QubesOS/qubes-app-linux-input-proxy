@@ -1,3 +1,9 @@
+qubes-input-proxy (1.0.30-1) unstable; urgency=medium
+
+  * debian: drop dep on python2
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Fri, 20 Jan 2023 13:20:12 +0100
+
 qubes-input-proxy (1.0.29-1) unstable; urgency=medium
 
   * tests: Switch to own fork of python-uinput
