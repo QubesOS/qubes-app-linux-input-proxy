@@ -1,3 +1,9 @@
+qubes-input-proxy (1.0.31-1) unstable; urgency=medium
+
+  * Drop legacy policy files
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Fri, 03 Feb 2023 19:19:41 +0100
+
 qubes-input-proxy (1.0.30-1) unstable; urgency=medium
 
   * debian: drop dep on python2
