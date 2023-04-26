@@ -1,3 +1,11 @@
+qubes-input-proxy (1.0.32-1) unstable; urgency=medium
+
+  [ Frédéric Pierret (fepitre) ]
+  * Rework Archlinux packaging
+  * Make new packaging compatible with legacy builder
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Wed, 26 Apr 2023 05:25:55 +0200
+
 qubes-input-proxy (1.0.31-1) unstable; urgency=medium
 
   * Drop legacy policy files
