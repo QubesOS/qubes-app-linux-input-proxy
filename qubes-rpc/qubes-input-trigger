@@ -43,6 +43,9 @@ def get_service_name(udevreturn, input_dev):
             ('QEMU_USB_Tablet' in udevreturn)
     ) and 'ID_INPUT_KEY' not in udevreturn:
         service = 'qubes-input-sender-tablet'
+    # PiKVM "mouse" is special, as it sends absolute events
+    elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_USB_VENDOR=PiKVM' in udevreturn:
+        service = 'qubes-input-sender-tablet'
     elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
         service = 'qubes-input-sender-mouse'
     elif 'ID_INPUT_KEY' in udevreturn and 'ID_INPUT_MOUSE' not in udevreturn:
