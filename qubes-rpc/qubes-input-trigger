@@ -109,6 +109,9 @@ def handle_event(input_dev, action, dom0):
                     return
                 if '/devices/virtual/' in udevreturn and dom0:
                     return
+                # exclude qubes virtual input device created by gui agent
+                if 'TAGS=:qubes-virtual-input-device:' in udevreturn:
+                    return
                 # We exclude in sys-usb ID_PATH=acpi-* and ID_PATH=platform-*
                 # which can correspond to power-switch buttons. By default, HVM
                 # exposes some so there is no point for adding input devices
