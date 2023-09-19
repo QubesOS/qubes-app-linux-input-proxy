@@ -1,3 +1,13 @@
+qubes-input-proxy (1.0.34-1) unstable; urgency=medium
+
+  [ Everett Gally ]
+  * exclude qubes virtual input device created by the gui agent from
+    qubes-input-trigger. It still works if not excluded, but
+    notifications about qubes.InputMouse and qubes.InputKeyboard will be
+    raised every time a qube loads if not excluded.
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 19 Sep 2023 04:19:09 +0200
+
 qubes-input-proxy (1.0.33-1) unstable; urgency=medium
 
   * Ask for absolute events for PiKVM mouse
