@@ -140,7 +140,7 @@ int receive_and_validate_caps(struct options *opt) {
     if (!opt->name && untrusted_caps_msg.name[0]) {
         unsigned i;
 
-        opt->name = calloc(sizeof(untrusted_caps_msg.name), 1);
+        opt->name = calloc(1, sizeof(untrusted_caps_msg.name));
         for (i = 0; i < sizeof(untrusted_caps_msg.name); i++) {
             if (untrusted_caps_msg.name[i] == 0)
                 /* opt->name initially zero-ed, so no need to copy that \0 */
