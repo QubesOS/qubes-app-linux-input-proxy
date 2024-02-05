@@ -1,3 +1,9 @@
+qubes-input-proxy (1.0.35-1) unstable; urgency=medium
+
+  * input-proxy-receiver: fix parameters order
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Mon, 05 Feb 2024 04:32:23 +0100
+
 qubes-input-proxy (1.0.34-1) unstable; urgency=medium
 
   [ Everett Gally ]
