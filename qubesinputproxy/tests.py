@@ -81,7 +81,7 @@ class TC_00_InputProxy(ExtraTestCase):
             self.vm.start(start_guid=False)
             if self.vm.run("python3 -c 'import uinput'", wait=True, gui=False) != 0:
                 # If uinput module not installed, try to install it with pip
-                p = self.vm.run("pip3 install git+https://github.com/marmarek/python-uinput@py311 2>&1", passio_popen=True,
+                p = self.vm.run("pip3 install --break-system-packages git+https://github.com/marmarek/python-uinput@py311 2>&1", passio_popen=True,
                     user="root", gui=False)
                 (stdout, _) = p.communicate()
                 if p.returncode != 0:
