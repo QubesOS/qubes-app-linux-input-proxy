@@ -74,6 +74,26 @@ int send_caps(int fd) {
     return rc;
 }
 
+int ignore_led_events(int fd) {
+    int rc;
+    unsigned long bits[BITS_TO_LONGS(LED_CNT)];
+    struct input_mask input_mask = {
+        .type       = EV_LED,
+        .codes_size = sizeof(bits),
+        .codes_ptr  = (uintptr_t)bits,
+    };
+
+    memset(bits, 0, sizeof(bits));
+
+    rc = ioctl(fd, EVIOCSMASK, &input_mask);
+    if (rc == -1) {
+        perror("ioctl EVIOCSMASK");
+        return -1;
+    }
+
+    return 0;
+}
+
 int pass_event(int src_fd, int dst_fd) {
     int rc;
     struct input_event ev;
@@ -156,6 +176,9 @@ int main(int argc, char **argv) {
         return 1;
 
     /* TODO: produce synthetic EV_REP initial events for keyboard */
+
+    if (ignore_led_events(fd) == -1)
+        return 1;
 
     if (process_events(fd) == -1)
         return 1;
