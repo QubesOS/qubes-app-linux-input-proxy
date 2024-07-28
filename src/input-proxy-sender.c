@@ -177,6 +177,12 @@ int main(int argc, char **argv) {
 
     /* TODO: produce synthetic EV_REP initial events for keyboard */
 
+    /* The input proxy sender is a client of the evdev driver and has an active
+     * grab. By default, Linux will send the LED events back to us, even if we
+     * sent them. This causes the events to recirculate forever, consuming lots
+     * of CPU and rendering the input device unusable. Avoid this issue by
+     * requesting Linux to not send LED events to us.
+     */
     if (ignore_led_events(fd) == -1)
         return 1;
 
