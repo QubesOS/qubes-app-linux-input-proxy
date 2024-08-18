@@ -1,3 +1,10 @@
+qubes-input-proxy (1.0.38-1) unstable; urgency=medium
+
+  [ M. Vefa Bicakci ]
+  * input-proxy-sender: Add comment re: masking LED events
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 18 Aug 2024 14:59:03 +0200
+
 qubes-input-proxy (1.0.37-1) unstable; urgency=medium
 
   [ M. Vefa Bicakci ]
