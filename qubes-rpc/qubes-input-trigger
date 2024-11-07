@@ -36,6 +36,15 @@ def get_args():
 
 def get_service_name(udevreturn, input_dev):
     service = None
+    try:
+        devpath = [line.split("=", 1)[1] for line in udevreturn.splitlines()
+                   if line.startswith("DEVPATH=")][0]
+        with open(f"/sys/{devpath}/device/capabilities/abs", "rb") as f:
+            abs_bytes = f.read()
+            # we care about only the first byte - that's where X,Y axies are
+            abs_caps = abs_bytes[0]
+    except (IndexError, FileNotFoundError):
+        abs_caps = 0
     if (
             ('ID_INPUT_TABLET' in udevreturn) or
             ('ID_INPUT_TOUCHSCREEN' in udevreturn) or
@@ -43,8 +52,9 @@ def get_service_name(udevreturn, input_dev):
             ('QEMU_USB_Tablet' in udevreturn)
     ) and 'ID_INPUT_KEY' not in udevreturn:
         service = 'qubes-input-sender-tablet'
-    # PiKVM "mouse" is special, as it sends absolute events
-    elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_USB_VENDOR=PiKVM' in udevreturn:
+    # if mouse report absolute events, prefer tablet service
+    # (0x3 is ABS_X | ABS_Y)
+    elif 'ID_INPUT_MOUSE' in udevreturn and abs_caps & 0x3:
         service = 'qubes-input-sender-tablet'
     elif 'ID_INPUT_MOUSE' in udevreturn and 'ID_INPUT_KEY' not in udevreturn:
         service = 'qubes-input-sender-mouse'
