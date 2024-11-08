@@ -1,3 +1,9 @@
+qubes-input-proxy (1.0.39-1) unstable; urgency=medium
+
+  * Replace PiKVM special handling with more generic one
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Fri, 08 Nov 2024 02:32:31 +0100
+
 qubes-input-proxy (1.0.38-1) unstable; urgency=medium
 
   [ M. Vefa Bicakci ]
