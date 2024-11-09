@@ -8,6 +8,9 @@ ENV{ID_PATH}=="platform-*", GOTO="qubes_input_proxy_end"
 # tag virtual input device so it can be identified when qubes-input-trigger is launched by /etc/xdg/autostart/qubes-input-trigger.desktop
 ATTRS{name}=="Qubes Virtual Input Device", TAG="qubes-virtual-input-device"
 
+# skip devices which are disabled for libignore
+ENV{LIBINPUT_IGNORE_DEVICE}=="1", GOTO="qubes_input_proxy_end"
+
 # skip virtual input device created by gui agent
 ATTRS{name}=="Qubes Virtual Input Device", GOTO="qubes_input_proxy_end"
 
