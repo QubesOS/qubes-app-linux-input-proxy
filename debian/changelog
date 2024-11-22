@@ -1,3 +1,14 @@
+qubes-input-proxy (1.0.40-1) unstable; urgency=medium
+
+  [ Marcus Ofenhed ]
+  * Add ability to filter qubes input devices with udev rules
+
+  [ Marek Marczykowski-Górecki ]
+  * Fix parsing device capabilities
+  * ci: drop R4.1, add R4.3
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Fri, 22 Nov 2024 02:22:29 +0100
+
 qubes-input-proxy (1.0.39-1) unstable; urgency=medium
 
   * Replace PiKVM special handling with more generic one
