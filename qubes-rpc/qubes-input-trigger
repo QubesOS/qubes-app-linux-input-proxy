@@ -39,11 +39,11 @@ def get_service_name(udevreturn, input_dev):
     try:
         devpath = [line.split("=", 1)[1] for line in udevreturn.splitlines()
                    if line.startswith("DEVPATH=")][0]
-        with open(f"/sys/{devpath}/device/capabilities/abs", "rb") as f:
-            abs_bytes = f.read()
-            # we care about only the first byte - that's where X,Y axies are
-            abs_caps = abs_bytes[0]
-    except (IndexError, FileNotFoundError):
+        with open(f"/sys/{devpath}/device/capabilities/abs", "r") as f:
+            abs_string = f.read().strip()
+            # we care about only the last byte - that's where X,Y axies are
+            abs_caps = int(abs_string.split()[-1], 16)
+    except (IndexError, FileNotFoundError, ValueError):
         abs_caps = 0
     if (
             ('ID_INPUT_TABLET' in udevreturn) or
