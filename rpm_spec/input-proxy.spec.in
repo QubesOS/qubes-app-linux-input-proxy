@@ -58,7 +58,7 @@ make %{?_smp_mflags} all
 make install DESTDIR=%{buildroot} PYTHON=%{__python3}
 
 # this really means Qubes > 4.1
-%if 0%{?fedora} > 32
+%if 0%{?fedora} > 32 || !0%{?fedora}
 rm -rf %{buildroot}/etc/qubes-rpc/policy
 %endif
 
@@ -69,7 +69,7 @@ rm -rf %{buildroot}/etc/qubes-rpc/policy
 %{python3_sitelib}/qubesinputproxy-*.egg-info/*
 %{python3_sitelib}/qubesinputproxy
 # this really means Qubes <= 4.1
-%if 0%{?fedora} <= 32
+%if 0%{?fedora} && 0%{?fedora} <= 32
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputMouse
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputKeyboard
 %attr(0664,root,qubes) %config(noreplace) /etc/qubes-rpc/policy/qubes.InputTablet
