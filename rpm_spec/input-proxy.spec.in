@@ -13,6 +13,10 @@ BuildRequires:	gcc
 BuildRequires:	kernel-headers
 BuildRequires:	python%{python3_pkgversion}-setuptools
 BuildRequires:	python%{python3_pkgversion}-devel
+%if 0%{?is_opensuse}
+# for directory ownership
+BuildRequires: qubes-core-qrexec
+%endif
 
 Requires: %{name}-receiver
 
