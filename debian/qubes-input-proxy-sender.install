@@ -3,8 +3,8 @@
 /usr/bin/qubes-input-trigger
 /etc/xdg/autostart/qubes-input-trigger.desktop
 /etc/sudoers.d/qubes-input-trigger
-/lib/udev/rules.d/90-qubes-input-proxy.rules
-/lib/systemd/system/qubes-input-sender-tablet@.service
-/lib/systemd/system/qubes-input-sender-mouse@.service
-/lib/systemd/system/qubes-input-sender-keyboard@.service
-/lib/systemd/system/qubes-input-sender-keyboard-mouse@.service
+/usr/lib/udev/rules.d/90-qubes-input-proxy.rules
+/usr/lib/systemd/system/qubes-input-sender-tablet@.service
+/usr/lib/systemd/system/qubes-input-sender-mouse@.service
+/usr/lib/systemd/system/qubes-input-sender-keyboard@.service
+/usr/lib/systemd/system/qubes-input-sender-keyboard-mouse@.service

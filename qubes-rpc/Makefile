@@ -19,13 +19,13 @@ install-vm:
 		qubes-input-sender-mouse@.service \
 		qubes-input-sender-tablet@.service \
 		$(DESTDIR)$(USRLIBDIR)/systemd/system
-	install -d $(DESTDIR)$(LIBDIR)/udev/rules.d
+	install -d $(DESTDIR)$(USRLIBDIR)/udev/rules.d
 	install -m 0644 qubes-input-proxy.rules \
-		$(DESTDIR)$(LIBDIR)/udev/rules.d/90-qubes-input-proxy.rules
+		$(DESTDIR)$(USRLIBDIR)/udev/rules.d/90-qubes-input-proxy.rules
 	install -m 0644 qubes-uinput.rules \
-		$(DESTDIR)$(LIBDIR)/udev/rules.d/90-qubes-uinput.rules
+		$(DESTDIR)$(USRLIBDIR)/udev/rules.d/90-qubes-uinput.rules
 	install -m 0644 -D qubes-uinput.modules \
-		$(DESTDIR)$(LIBDIR)/modules-load.d/qubes-uinput.conf
+		$(DESTDIR)$(USRLIBDIR)/modules-load.d/qubes-uinput.conf
 	install -d $(DESTDIR)/etc/qubes-rpc
 	install qubes.InputMouse $(DESTDIR)/etc/qubes-rpc
 	install qubes.InputKeyboard $(DESTDIR)/etc/qubes-rpc
