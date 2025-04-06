@@ -1,3 +1,12 @@
+qubes-input-proxy (1.0.41-1) unstable; urgency=medium
+
+  * rpm: adjust BR for directory ownership check in openSUSE
+  * Move files from /lib to /usr/lib
+  * Do not install dom0 files in openSUSE VM package
+  * rpm: add BR: sudo for directory ownership
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 06 Apr 2025 02:05:58 +0200
+
 qubes-input-proxy (1.0.40-1) unstable; urgency=medium
 
   [ Marcus Ofenhed ]
