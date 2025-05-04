@@ -37,8 +37,7 @@ def get_args():
 def get_service_name(udevreturn, input_dev):
     service = None
     try:
-        devpath = [line.split("=", 1)[1] for line in udevreturn.splitlines()
-                   if line.startswith("DEVPATH=")][0]
+        devpath = udevreturn.get("DEVPATH")
         with open(f"/sys/{devpath}/device/capabilities/abs", "r") as f:
             abs_string = f.read().strip()
             # we care about only the last byte - that's where X,Y axies are
@@ -49,7 +48,7 @@ def get_service_name(udevreturn, input_dev):
             ('ID_INPUT_TABLET' in udevreturn) or
             ('ID_INPUT_TOUCHSCREEN' in udevreturn) or
             ('ID_INPUT_TOUCHPAD' in udevreturn) or
-            ('QEMU_USB_Tablet' in udevreturn)
+            ('QEMU_USB_Tablet' in udevreturn.get("ID_MODEL", ""))
     ) and 'ID_INPUT_KEY' not in udevreturn:
         service = 'qubes-input-sender-tablet'
     # if mouse report absolute events, prefer tablet service
@@ -106,31 +105,37 @@ def handle_event(input_dev, action, dom0):
                 udevreturn = subprocess.check_output([
                     "udevadm", "info", "--query=property",
                     "--name=" + eventFile]).decode()
-                if 'ID_TYPE=video' in udevreturn:
+                udevreturn = dict(
+                        item.split("=", 1)
+                        for item in udevreturn.splitlines()
+                )
+                if udevreturn.get('ID_TYPE') == 'video':
                     return
                 # The ID_SERIAL here corresponds to qemu-emulated tablet
                 # device for HVM which is static. It allows to attach another
                 # tablet for example when using KVM for tests. Depending on
                 # QEMU version, the device may look different. But it will
                 # always be the first bus, either on 00:04.0 or 00:05.0.
-                if ('ID_PATH=pci-0000:00:04.0-usb-0:1:1.0' in udevreturn or \
-                    'ID_PATH=pci-0000:00:05.0-usb-0:1:1.0' in udevreturn) and \
-                        'ID_SERIAL=QEMU_QEMU_USB_Tablet_' in udevreturn:
+                if udevreturn.get('ID_PATH') in (
+                        'pci-0000:00:04.0-usb-0:1:1.0',
+                        'pci-0000:00:05.0-usb-0:1:1.0') and \
+                        udevreturn.get('ID_SERIAL', '').startswith('QEMU_QEMU_USB_Tablet'):
                     return
-                if '/devices/virtual/' in udevreturn and dom0:
+                if udevreturn.get('DEVPATH', '').startswith('/devices/virtual/') and dom0:
                     return
                 # exclude qubes virtual input device created by gui agent
-                if 'TAGS=:qubes-virtual-input-device:' in udevreturn:
+                if udevreturn.get('TAGS') == ':qubes-virtual-input-device:':
                     return
                 # We exclude in sys-usb ID_PATH=acpi-* and ID_PATH=platform-*
                 # which can correspond to power-switch buttons. By default, HVM
                 # exposes some so there is no point for adding input devices
                 # into dom0 from those. This is only pertinent in the case
                 # of dom0 key devices to sys-gui-gpu
-                if 'ID_PATH=acpi-' in udevreturn and not dom0:
-                    return
-                if 'ID_PATH=platform-' in udevreturn and not dom0:
-                    return
+                if not dom0:
+                    if udevreturn.get('ID_PATH', '').startswith('acpi-'):
+                        return
+                    if udevreturn.get('ID_PATH', '').startswith('platform-'):
+                        return
         elif action == "remove":
             # on remove action we use information passed through
             # env by udev
