@@ -1,3 +1,9 @@
+qubes-input-proxy (1.0.42-1) unstable; urgency=medium
+
+  * Fix handling remove event
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 20 May 2025 02:40:16 +0200
+
 qubes-input-proxy (1.0.41-1) unstable; urgency=medium
 
   * rpm: adjust BR for directory ownership check in openSUSE
