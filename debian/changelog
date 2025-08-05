@@ -1,3 +1,10 @@
+qubes-input-proxy (1.0.43-1) unstable; urgency=medium
+
+  [ Vertex X7-53 ]
+  * Handle additional PCIe bus address for QEMU emulated tablet
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 05 Aug 2025 13:55:50 +0200
+
 qubes-input-proxy (1.0.42-1) unstable; urgency=medium
 
   * Fix handling remove event
