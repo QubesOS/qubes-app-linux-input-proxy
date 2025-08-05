@@ -117,6 +117,7 @@ def handle_event(input_dev, action, dom0):
                 # QEMU version, the device may look different. But it will
                 # always be the first bus, either on 00:04.0 or 00:05.0.
                 if udevreturn.get('ID_PATH') in (
+                        'pci-0000:00:03.0-usb-0:1:1.0',
                         'pci-0000:00:04.0-usb-0:1:1.0',
                         'pci-0000:00:05.0-usb-0:1:1.0') and \
                         udevreturn.get('ID_SERIAL', '').startswith('QEMU_QEMU_USB_Tablet'):
