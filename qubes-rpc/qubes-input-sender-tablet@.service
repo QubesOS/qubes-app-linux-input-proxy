@@ -5,4 +5,8 @@ After=qubes-qrexec-agent.service
 [Service]
 Environment=TARGET_DOMAIN=dom0
 EnvironmentFile=-/etc/qubes/input-proxy-target
-ExecStart=/usr/bin/qubes-input-sender qubes.InputTablet /dev/input/%i "$TARGET_DOMAIN"
+EnvironmentFile=-%t/qubes-input-proxy-env/%i
+ExecStartPre=/usr/lib/qubes/input-proxy-arg /dev/input/%i %t/qubes-input-proxy-env/%i
+ExecStart=/usr/bin/qubes-input-sender qubes.InputTablet${QREXEC_ARG} /dev/input/%i "$TARGET_DOMAIN"
+ExecStopPost=/bin/rm -f %t/qubes-input-proxy-env/%i
+PrivateTmp=yes

@@ -6,4 +6,8 @@ OnFailure=qubes-input-sender-mouse@%i.service
 [Service]
 Environment=TARGET_DOMAIN=dom0
 EnvironmentFile=-/etc/qubes/input-proxy-target
-ExecStart=/usr/bin/qubes-input-sender qubes.InputKeyboard /dev/input/%i "$TARGET_DOMAIN"
+EnvironmentFile=-%t/qubes-input-proxy-env/%i
+ExecStartPre=/usr/lib/qubes/input-proxy-arg /dev/input/%i %t/qubes-input-proxy-env/%i
+ExecStart=/usr/bin/qubes-input-sender qubes.InputKeyboard${QREXEC_ARG} /dev/input/%i "$TARGET_DOMAIN"
+ExecStopPost=/bin/rm -f %t/qubes-input-proxy-env/%i
+PrivateTmp=yes
