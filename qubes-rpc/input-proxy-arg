@@ -1,0 +1,29 @@
+#!/bin/bash
+
+dev="$1"
+output="$2"
+
+sysfs_path="/sys/class/input/${dev##*/}/device/uevent"
+
+[ -e "$sysfs_path" ] || exit
+product="$(grep ^PRODUCT= "$sysfs_path")"
+[ -n "$product" ] || exit
+product="${product#*=}"
+product="${product//\"/}"
+product="${product//\//-}"
+
+port="$(grep ^PHYS= "$sysfs_path")"
+# by default include also physical port (if known), but allow opt-out
+if [ -n "$port" ] && ! [ -e /run/qubes-service/input-proxy-exclude-port ]; then
+    port="${port#*=}"
+    port="${port//\"/}"
+    port="${port%/*}"
+    port="${port//:/_}"
+    # separate port from device with '+'
+    port="${port}+"
+else
+    port=
+fi
+
+mkdir -p "${output%/*}"
+echo "QREXEC_ARG=+$port$product" > "$output"
