@@ -26,6 +26,8 @@ install-vm:
 		$(DESTDIR)$(USRLIBDIR)/udev/rules.d/90-qubes-uinput.rules
 	install -m 0644 -D qubes-uinput.modules \
 		$(DESTDIR)$(USRLIBDIR)/modules-load.d/qubes-uinput.conf
+	install -m 0755 -D input-proxy-arg \
+		$(DESTDIR)$(USRLIBDIR)/qubes/input-proxy-arg
 	install -d $(DESTDIR)/etc/qubes-rpc
 	install qubes.InputMouse $(DESTDIR)/etc/qubes-rpc
 	install qubes.InputKeyboard $(DESTDIR)/etc/qubes-rpc
