@@ -8,3 +8,4 @@
 /usr/lib/systemd/system/qubes-input-sender-mouse@.service
 /usr/lib/systemd/system/qubes-input-sender-keyboard@.service
 /usr/lib/systemd/system/qubes-input-sender-keyboard-mouse@.service
+/usr/lib/qubes/input-proxy-arg
