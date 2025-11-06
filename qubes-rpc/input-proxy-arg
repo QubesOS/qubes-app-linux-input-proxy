@@ -25,5 +25,18 @@ else
     port=
 fi
 
+uniq="$(grep ^UNIQ= "$sysfs_path")"
+# include serial, if present, but allow opt-out
+if [ -n "$uniq" ] && ! [ -e /run/qubes-service/input-proxy-exclude-serial ]; then
+    uniq="${uniq#*=}"
+    uniq="${uniq//\"/}"
+    uniq="${uniq%/*}"
+    uniq="${uniq//:/_}"
+    # separate serial from device with '+'
+    uniq="+${uniq}"
+else
+    uniq=
+fi
+
 mkdir -p "${output%/*}"
-echo "QREXEC_ARG=+$port$product" > "$output"
+echo "QREXEC_ARG=+$port$product$uniq" > "$output"
