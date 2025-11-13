@@ -1,3 +1,10 @@
+qubes-input-proxy (1.0.45-1) unstable; urgency=medium
+
+  [ Vertex X7-53 ]
+  * Add device serial to qrexec call argument
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Thu, 13 Nov 2025 17:07:49 +0100
+
 qubes-input-proxy (1.0.44-1) unstable; urgency=medium
 
   * Add device info to qrexec call argument
