@@ -8,6 +8,7 @@ import subprocess
 import os
 import sys
 import time
+import pathlib
 from stat import *
 try:
     import pyinotify
@@ -180,13 +181,19 @@ def handle_event(input_dev, action, dom0):
                 # device for HVM which is static. It allows to attach another
                 # tablet for example when using KVM for tests. Depending on
                 # QEMU version, the device may look different. But it will
-                # always be the first bus, either on 00:04.0 or 00:05.0.
-                if udevreturn.get('ID_PATH') in (
-                        'pci-0000:00:03.0-usb-0:1:1.0',
-                        'pci-0000:00:04.0-usb-0:1:1.0',
-                        'pci-0000:00:05.0-usb-0:1:1.0') and \
-                        udevreturn.get('ID_SERIAL', '').startswith('QEMU_QEMU_USB_Tablet'):
-                    return
+                # always be the first bus.
+                if udevreturn.get('ID_SERIAL', '').startswith('QEMU_QEMU_USB_Tablet'):
+                    # ignore only the first USB controller
+                    sysfs_pci = pathlib.Path("/sys/bus/pci/devices")
+                    for pci in sorted(sysfs_pci.iterdir()):
+                        devclass = (pci / "class").read_text()
+                        if devclass.startswith("0x0c"):
+                            first_usb = pci.name
+                            break
+                    else:
+                        first_usb = ""
+                    if udevreturn.get("ID_PATH") == f"pci-{first_usb}-usb-0:1:1.0":
+                        return
                 if udevreturn.get('DEVPATH', '').startswith('/devices/virtual/') and dom0:
                     return
                 # exclude qubes virtual input device created by gui agent
